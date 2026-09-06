@@ -14,11 +14,12 @@ import {
   UserCheck,
   Scale,
   BarChart3,
-  BookOpen
+  BookOpen,
+  FileCode2
 } from 'lucide-react';
 import { 
   switchToStudionet, 
-  AGENTSLA_CONTRACT_ADDRESS 
+  DEFAULT_CONTRACT_ADDRESS 
 } from '../config/genlayer';
 import { formatAddress, formatGEN, getExplorerUrl } from '../utils/helpers';
 
@@ -35,6 +36,8 @@ interface NavbarProps {
   onSelectTab: (tab: NavTab) => void;
   openCount: number;
   appealCount: number;
+  contractAddress?: string;
+  onOpenContractConfig?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -48,6 +51,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSelectTab,
   openCount,
   appealCount,
+  contractAddress,
+  onOpenContractConfig,
 }) => {
   const [isZeroBalance, setIsZeroBalance] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -202,6 +207,30 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Right: Actions & Comprehensive Wallet Profile */}
           <div className="flex items-center gap-2.5">
+            {/* Contract Status / Config Button */}
+            {onOpenContractConfig && (
+              <button
+                onClick={onOpenContractConfig}
+                title={
+                  contractAddress && contractAddress !== DEFAULT_CONTRACT_ADDRESS
+                    ? `Intelligent Contract: ${contractAddress}`
+                    : 'Chưa cấu hình Contract - Bấm để kết nối Contract đã deploy'
+                }
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all border ${
+                  contractAddress && contractAddress !== DEFAULT_CONTRACT_ADDRESS
+                    ? 'bg-cyan-950/40 border-cyan-500/30 text-cyan-300 hover:bg-cyan-900/40'
+                    : 'bg-amber-950/40 border-amber-500/40 text-amber-300 hover:bg-amber-900/40 animate-pulse'
+                }`}
+              >
+                <FileCode2 className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline">
+                  {contractAddress && contractAddress !== DEFAULT_CONTRACT_ADDRESS
+                    ? formatAddress(contractAddress)
+                    : 'Connect Contract'}
+                </span>
+              </button>
+            )}
+
             {/* Sync trigger */}
             <button
               onClick={onRefresh}
@@ -298,7 +327,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </a>
 
                       <a
-                        href={getExplorerUrl(AGENTSLA_CONTRACT_ADDRESS, 'address')}
+                        href={getExplorerUrl(contractAddress || DEFAULT_CONTRACT_ADDRESS, 'address')}
                         target="_blank"
                         rel="noreferrer"
                         className="w-full flex items-center justify-between px-3 py-2 text-xs text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
