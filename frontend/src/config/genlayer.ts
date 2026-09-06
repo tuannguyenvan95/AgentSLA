@@ -1,14 +1,13 @@
 import { createClient } from 'genlayer-js';
 import { studionet } from 'genlayer-js/chains';
 
-// Environment or configured contract address
-export const DEFAULT_CONTRACT_ADDRESS = 
-  ((import.meta as any).env?.VITE_CONTRACT_ADDRESS as string) || '0x0000000000000000000000000000000000000000';
+// Official Deployed Intelligent Contract on GenLayer Studionet (Chain 61999)
+export const DEFAULT_CONTRACT_ADDRESS = '0x20F857D9B26d74D1B2B6546FfdF295510D210e1B';
 
 export function getContractAddress(): string {
   try {
     const saved = localStorage.getItem('agentsla_contract_address');
-    if (saved && saved.trim().startsWith('0x') && saved.trim().length === 42) {
+    if (saved && saved.trim().startsWith('0x') && saved.trim().length === 42 && saved.trim() !== '0x0000000000000000000000000000000000000000') {
       return saved.trim();
     }
   } catch {}

@@ -13,9 +13,7 @@ import {
   Bot
 } from 'lucide-react';
 import { 
-  DEFAULT_CONTRACT_ADDRESS,
   getContractAddress,
-  saveContractAddress,
   STUDIONET_CONFIG, 
   switchToStudionet,
   getEthereumProvider
@@ -30,7 +28,6 @@ import { JuryModal } from './components/JuryModal';
 import { CourtRoom } from './components/CourtRoom';
 import { AnalyticsView } from './components/AnalyticsView';
 import { DocsView } from './components/DocsView';
-import { ContractConfigModal } from './components/ContractConfigModal';
 
 export const App: React.FC = () => {
   const [account, setAccount] = useState<string | null>(null);
@@ -38,9 +35,8 @@ export const App: React.FC = () => {
   const [isCorrectNetwork, setIsCorrectNetwork] = useState<boolean>(false);
   const [client, setClient] = useState<any>(null);
 
-  // Contract Address & Config
-  const [contractAddress, setContractAddressState] = useState<string>(getContractAddress());
-  const [isContractConfigOpen, setIsContractConfigOpen] = useState<boolean>(false);
+  // Official Contract Address
+  const [contractAddress] = useState<string>(getContractAddress());
 
   // 100% Real On-Chain State (No mock / demo data)
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -176,19 +172,11 @@ export const App: React.FC = () => {
     setSuccessMsg('Đã ngắt kết nối ví thành công.');
   };
 
-  // Update Contract Address
-  const handleUpdateContractAddress = (newAddr: string) => {
-    saveContractAddress(newAddr);
-    setContractAddressState(newAddr);
-    setSuccessMsg(`Đã cập nhật địa chỉ Intelligent Contract: ${newAddr.slice(0, 6)}...${newAddr.slice(-4)}`);
-    fetchOnChainData(client, newAddr);
-  };
-
   // Fetch all jobs from the Intelligent Contract
   const fetchOnChainData = useCallback(async (customClient?: any, targetContract?: string) => {
     const c = customClient || client;
     const addr = targetContract || contractAddress;
-    if (!c || !addr || addr === DEFAULT_CONTRACT_ADDRESS) {
+    if (!c || !addr || addr === '0x0000000000000000000000000000000000000000') {
       setJobs([]);
       setTotalEscrowLocked('0');
       return;
@@ -343,9 +331,8 @@ export const App: React.FC = () => {
     if (!isCorrectNetwork) {
       throw new Error('Vui lòng chuyển sang mạng GenLayer studionet (Chain ID 61999).');
     }
-    if (!contractAddress || contractAddress === DEFAULT_CONTRACT_ADDRESS) {
-      setIsContractConfigOpen(true);
-      throw new Error('Chưa kết nối Intelligent Contract. Vui lòng deploy contract trên GenLayer Studio và dán địa chỉ contract vào popup cấu hình!');
+    if (!contractAddress || !contractAddress.startsWith('0x') || contractAddress === '0x0000000000000000000000000000000000000000') {
+      throw new Error('Chưa kết nối Intelligent Contract hợp lệ.');
     }
 
     setIsTxPending(true);
@@ -383,9 +370,8 @@ export const App: React.FC = () => {
     if (!client || !account) {
       throw new Error('Vui lòng kết nối ví MetaMask.');
     }
-    if (!contractAddress || contractAddress === DEFAULT_CONTRACT_ADDRESS) {
-      setIsContractConfigOpen(true);
-      throw new Error('Chưa kết nối Intelligent Contract. Vui lòng deploy contract trên GenLayer Studio.');
+    if (!contractAddress || !contractAddress.startsWith('0x') || contractAddress === '0x0000000000000000000000000000000000000000') {
+      throw new Error('Chưa kết nối Intelligent Contract hợp lệ.');
     }
 
     setIsTxPending(true);
@@ -417,9 +403,8 @@ export const App: React.FC = () => {
       setErrorMsg('Vui lòng kết nối ví MetaMask.');
       return;
     }
-    if (!contractAddress || contractAddress === DEFAULT_CONTRACT_ADDRESS) {
-      setIsContractConfigOpen(true);
-      setErrorMsg('Chưa kết nối Intelligent Contract. Vui lòng deploy contract trên GenLayer Studio.');
+    if (!contractAddress || !contractAddress.startsWith('0x') || contractAddress === '0x0000000000000000000000000000000000000000') {
+      setErrorMsg('Chưa kết nối Intelligent Contract hợp lệ.');
       return;
     }
 
@@ -458,9 +443,8 @@ export const App: React.FC = () => {
     if (!client || !account) {
       throw new Error('Vui lòng kết nối ví MetaMask.');
     }
-    if (!contractAddress || contractAddress === DEFAULT_CONTRACT_ADDRESS) {
-      setIsContractConfigOpen(true);
-      throw new Error('Chưa kết nối Intelligent Contract. Vui lòng deploy contract trên GenLayer Studio.');
+    if (!contractAddress || !contractAddress.startsWith('0x') || contractAddress === '0x0000000000000000000000000000000000000000') {
+      throw new Error('Chưa kết nối Intelligent Contract hợp lệ.');
     }
 
     setIsTxPending(true);
@@ -492,9 +476,8 @@ export const App: React.FC = () => {
   // 5. Cancel Job
   const handleCancelJob = async (jobId: string) => {
     if (!client || !account) return;
-    if (!contractAddress || contractAddress === DEFAULT_CONTRACT_ADDRESS) {
-      setIsContractConfigOpen(true);
-      setErrorMsg('Chưa kết nối Intelligent Contract. Vui lòng deploy contract trên GenLayer Studio.');
+    if (!contractAddress || !contractAddress.startsWith('0x') || contractAddress === '0x0000000000000000000000000000000000000000') {
+      setErrorMsg('Chưa kết nối Intelligent Contract hợp lệ.');
       return;
     }
     if (!confirm(`Hủy job ${jobId} và hoàn lại tiền bảo chứng Escrow?`)) return;
@@ -572,7 +555,6 @@ export const App: React.FC = () => {
         openCount={openCount}
         appealCount={appealCount}
         contractAddress={contractAddress}
-        onOpenContractConfig={() => setIsContractConfigOpen(true)}
       />
 
       {/* Main Container */}
@@ -897,13 +879,6 @@ export const App: React.FC = () => {
         onAppeal={handleAppealJob}
         currentAccount={account}
         isAppealing={isTxPending}
-      />
-
-      <ContractConfigModal
-        isOpen={isContractConfigOpen}
-        onClose={() => setIsContractConfigOpen(false)}
-        currentAddress={contractAddress}
-        onSaveAddress={handleUpdateContractAddress}
       />
     </div>
   );
