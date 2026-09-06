@@ -45,16 +45,27 @@ export const STUDIONET_CONFIG = {
  */
 export function getEthereumProvider() {
   if (typeof window === 'undefined') return null;
-  const eth = (window as any).ethereum;
-  if (!eth) return null;
-  if (eth.providers && Array.isArray(eth.providers)) {
-    const mm = eth.providers.find((p: any) => p.isMetaMask && !p.isBraveWallet);
+  const win = window as any;
+
+  // 1. If window.ethereum.providers exists (e.g. MetaMask + Coinbase + Phantom)
+  if (win.ethereum?.providers && Array.isArray(win.ethereum.providers) && win.ethereum.providers.length > 0) {
+    const mm = win.ethereum.providers.find((p: any) => p.isMetaMask);
     if (mm) return mm;
-    const anyMM = eth.providers.find((p: any) => p.isMetaMask);
-    if (anyMM) return anyMM;
-    return eth.providers[0];
+    return win.ethereum.providers[0];
   }
-  return eth;
+
+  // 2. Direct window.ethereum (MetaMask, Rabby, Brave, etc.)
+  if (win.ethereum) {
+    return win.ethereum;
+  }
+
+  // 3. Fallbacks for other injected EVM wallets
+  if (win.okxwallet) return win.okxwallet;
+  if (win.phantom?.ethereum) return win.phantom.ethereum;
+  if (win.coinbaseWalletExtension) return win.coinbaseWalletExtension;
+  if (win.bitkeep?.ethereum) return win.bitkeep.ethereum;
+
+  return null;
 }
 
 /**

@@ -111,7 +111,7 @@ export const App: React.FC = () => {
   const handleConnectWallet = async () => {
     const eth = getEthereumProvider();
     if (!eth) {
-      alert('Không tìm thấy MetaMask hoặc Web3 wallet. Vui lòng cài đặt tiện ích MetaMask trên trình duyệt của bạn.');
+      alert('Không tìm thấy tiện ích ví Web3 (MetaMask, OKX, Rabby...). Vui lòng cài đặt tiện ích MetaMask trên trình duyệt của bạn.');
       return;
     }
 
@@ -126,6 +126,10 @@ export const App: React.FC = () => {
 
       const primary = accounts[0];
       setAccount(primary);
+      try {
+        localStorage.setItem('agentsla_wallet_connected', 'true');
+      } catch {}
+
       const userClient = initClient(primary);
       await fetchBalance(primary);
       setSuccessMsg(`Kết nối ví thành công: ${primary.slice(0, 6)}...${primary.slice(-4)}`);
@@ -141,7 +145,7 @@ export const App: React.FC = () => {
             setIsCorrectNetwork(true);
             await fetchBalance(primary);
           } else {
-            setErrorMsg('Ví đã kết nối, nhưng chưa ở mạng GenLayer Studionet (Chain 61999). Hãy bấm "Switch Chain" trên thanh menu để chuyển mạng.');
+            setErrorMsg('Ví đã kết nối, nhưng đang ở mạng khác. Hãy bấm "Switch Chain" trên thanh menu để chuyển sang GenLayer Studionet (Chain 61999).');
           }
         }
       } catch (netErr: any) {
@@ -152,7 +156,9 @@ export const App: React.FC = () => {
     } catch (err: any) {
       console.error('Wallet connection rejected:', err);
       if (err.code === 4001) {
-        setErrorMsg('Bạn đã hủy yêu cầu kết nối trên ví MetaMask.');
+        setErrorMsg('Bạn đã hủy yêu cầu kết nối ví trên extension.');
+      } else if (err.code === -32002) {
+        setErrorMsg('Đang có yêu cầu kết nối chờ xử lý! Vui lòng bấm vào biểu tượng extension MetaMask trên thanh công cụ trình duyệt của bạn.');
       } else {
         setErrorMsg(err?.message || 'Kết nối ví thất bại. Vui lòng thử lại.');
       }
@@ -161,6 +167,9 @@ export const App: React.FC = () => {
 
   // Disconnect wallet
   const handleDisconnectWallet = () => {
+    try {
+      localStorage.removeItem('agentsla_wallet_connected');
+    } catch {}
     setAccount(null);
     setBalance('0');
     initClient();
@@ -250,11 +259,22 @@ export const App: React.FC = () => {
     const eth = getEthereumProvider();
     const initialClient = initClient();
 
+    let wasConnected = false;
+    try {
+      wasConnected = localStorage.getItem('agentsla_wallet_connected') === 'true';
+    } catch {}
+
     if (eth) {
       checkNetwork();
-      eth.request({ method: 'eth_accounts' }).then((accounts: string[]) => {
+
+      const methodToCall = wasConnected ? 'eth_requestAccounts' : 'eth_accounts';
+
+      eth.request({ method: methodToCall }).then((accounts: string[]) => {
         if (accounts && accounts.length > 0) {
           setAccount(accounts[0]);
+          try {
+            localStorage.setItem('agentsla_wallet_connected', 'true');
+          } catch {}
           const userClient = initClient(accounts[0]);
           fetchBalance(accounts[0]);
           fetchOnChainData(userClient);
@@ -266,20 +286,30 @@ export const App: React.FC = () => {
       });
 
       const handleAccountsChanged = (accounts: string[]) => {
-        if (accounts.length > 0) {
+        if (accounts && accounts.length > 0) {
           setAccount(accounts[0]);
+          try {
+            localStorage.setItem('agentsla_wallet_connected', 'true');
+          } catch {}
           const uc = initClient(accounts[0]);
           fetchBalance(accounts[0]);
           fetchOnChainData(uc);
         } else {
+          try {
+            localStorage.removeItem('agentsla_wallet_connected');
+          } catch {}
           setAccount(null);
           setBalance('0');
         }
       };
 
-      const handleChainChanged = () => {
+      const handleChainChanged = (newChainId: string) => {
         checkNetwork();
-        window.location.reload();
+        const isMatch = typeof newChainId === 'string' && newChainId.toLowerCase() === STUDIONET_CONFIG.chainIdHex.toLowerCase();
+        setIsCorrectNetwork(isMatch);
+        if (account) {
+          fetchBalance(account);
+        }
       };
 
       eth.on?.('accountsChanged', handleAccountsChanged);
@@ -292,7 +322,7 @@ export const App: React.FC = () => {
     } else {
       fetchOnChainData(initialClient);
     }
-  }, [initClient, checkNetwork, fetchBalance, fetchOnChainData]);
+  }, [initClient, checkNetwork, fetchBalance, fetchOnChainData, account]);
 
   // Auto-refresh interval
   useEffect(() => {
