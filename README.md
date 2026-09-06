@@ -4,7 +4,7 @@
 > **Network:** GenLayer `studionet` (Chain ID: `61999` / `0xF1EF`, RPC: `https://studio.genlayer.com/api`)  
 > **Target Portal:** GenLayer Portal (Builders Track — `portal.genlayer.foundation`)  
 > **GitHub Repository:** [https://github.com/tuannguyenvan95/AgentSLA](https://github.com/tuannguyenvan95/AgentSLA)  
-> **Official Intelligent Contract:** `0x20F857D9B26d74D1B2B6546FfdF295510D210e1B`  
+> **Official Intelligent Contract:** `0x29486f9b2183FE278DA68DD838d4a581F1b4E449`  
 > **Live dApp URL (Vercel):** [https://agentsla-court.vercel.app](https://agentsla-court.vercel.app)
 
 ---
