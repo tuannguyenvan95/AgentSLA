@@ -89,7 +89,7 @@ class Contract(gl.Contract):
 
         new_job = Job(
             job_id=job_id,
-            creator=gl.message.sender,
+            creator=gl.message.sender_address,
             worker=empty_worker,
             bounty_amount=bounty,
             appeal_bond=bigint(0),
@@ -130,7 +130,7 @@ class Contract(gl.Contract):
         if not cleaned_url or not cleaned_url.startswith("http"):
             raise gl.UserError("Valid GitHub Pull Request URL is required.")
 
-        job.worker = gl.message.sender
+        job.worker = gl.message.sender_address
         job.pr_url = cleaned_url
         job.status = u8(1)  # IN_REVIEW
         job.reason = "PR deliverable submitted. Ready for on-chain AI jury adjudication."
@@ -320,7 +320,7 @@ Provide your evaluation as pure JSON with no markdown backticks or commentary:
         if job.status not in (u8(2), u8(3)):
             raise gl.UserError(f"Job {job_id} is not in a resolved state eligible for appeal.")
 
-        if gl.message.sender != job.creator and gl.message.sender != job.worker:
+        if gl.message.sender_address != job.creator and gl.message.sender_address != job.worker:
             raise gl.UserError("Only the Master Agent (creator) or Sub-Agent (worker) can appeal this decision.")
 
         # Minimum appeal bond: at least 25% of original bounty or > 0
@@ -336,7 +336,7 @@ Provide your evaluation as pure JSON with no markdown backticks or commentary:
         job.appeal_count = job.appeal_count + u8(1)
         job.status = u8(5)  # IN_APPEAL
         job.verdict = "IN_APPEAL"
-        job.reason = f"Appellate review triggered by {gl.message.sender}. Staked bond: {int(bonded)} wei."
+        job.reason = f"Appellate review triggered by {gl.message.sender_address}. Staked bond: {int(bonded)} wei."
         self.total_appeals_processed = self.total_appeals_processed + u32(1)
 
     @gl.public.write
@@ -348,7 +348,7 @@ Provide your evaluation as pure JSON with no markdown backticks or commentary:
             raise gl.UserError(f"Job {job_id} does not exist.")
 
         job = self.jobs[job_id]
-        if gl.message.sender != job.creator:
+        if gl.message.sender_address != job.creator:
             raise gl.UserError("Only the job creator can cancel this job.")
 
         if job.status != u8(0):

@@ -37,8 +37,24 @@ if "genlayer" not in sys.modules:
         write = Write()
         
     class MockMessage:
-        sender = Address("0x1111111111111111111111111111111111111111")
+        _sender = Address("0x1111111111111111111111111111111111111111")
         value = 1000000000000000000  # 1 GEN
+
+        @property
+        def sender(self):
+            return self._sender
+
+        @sender.setter
+        def sender(self, val):
+            self._sender = val
+
+        @property
+        def sender_address(self):
+            return self._sender
+
+        @sender_address.setter
+        def sender_address(self, val):
+            self._sender = val
 
     class MockBlock:
         number = 123456

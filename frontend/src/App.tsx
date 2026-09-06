@@ -110,7 +110,7 @@ export const App: React.FC = () => {
   const handleConnectWallet = async () => {
     const eth = getEthereumProvider();
     if (!eth) {
-      alert('Không tìm thấy tiện ích ví Web3 (MetaMask, OKX, Rabby...). Vui lòng cài đặt tiện ích MetaMask trên trình duyệt của bạn.');
+      alert('Web3 wallet extension not found (MetaMask, OKX, Rabby...). Please install MetaMask in your browser.');
       return;
     }
 
@@ -122,7 +122,7 @@ export const App: React.FC = () => {
       // Step 1: Prompt account authorization on extension
       const accounts: string[] = await eth.request({ method: 'eth_requestAccounts' });
       if (!accounts || accounts.length === 0) {
-        throw new Error('Không có tài khoản nào được kết nối.');
+        throw new Error('No account connected.');
       }
 
       const primary = accounts[0];
@@ -132,7 +132,7 @@ export const App: React.FC = () => {
       } catch {}
 
       setShowWalletPromptModal(false);
-      setSuccessMsg(`Kết nối ví thành công: ${primary.slice(0, 6)}...${primary.slice(-4)}`);
+      setSuccessMsg(`Wallet connected successfully: ${primary.slice(0, 6)}...${primary.slice(-4)}`);
 
       // Step 2: Fetch balance
       await fetchBalance(primary);
@@ -148,7 +148,7 @@ export const App: React.FC = () => {
             setIsCorrectNetwork(true);
             await fetchBalance(primary);
           } else {
-            setErrorMsg('Ví đã kết nối, nhưng đang ở mạng khác. Hãy bấm "Switch Chain" trên thanh menu để chuyển sang GenLayer Studionet (Chain 61999).');
+            setErrorMsg('Wallet connected, but on an unsupported network. Please click "Switch Chain" in the top bar to switch to GenLayer Studionet (Chain 61999).');
           }
         }
       } catch (netErr: any) {
@@ -158,11 +158,11 @@ export const App: React.FC = () => {
       console.error('Wallet connection rejected:', err);
       setShowWalletPromptModal(false);
       if (err.code === 4001) {
-        setErrorMsg('Bạn đã hủy yêu cầu kết nối ví trên extension.');
+        setErrorMsg('Connection request was cancelled in your wallet extension.');
       } else if (err.code === -32002) {
-        setErrorMsg('Đang có popup MetaMask chờ phê duyệt! Vui lòng bấm vào icon con cáo MetaMask trên thanh công cụ trình duyệt để mở khóa và duyệt.');
+        setErrorMsg('A wallet approval request is pending! Please click the MetaMask extension icon in your browser toolbar to approve.');
       } else {
-        setErrorMsg(err?.message || 'Kết nối ví thất bại. Vui lòng thử lại.');
+        setErrorMsg(err?.message || 'Wallet connection failed. Please try again.');
       }
     } finally {
       setIsConnecting(false);
@@ -176,7 +176,7 @@ export const App: React.FC = () => {
     } catch {}
     setAccount(null);
     setBalance('0');
-    setSuccessMsg('Đã ngắt kết nối ví.');
+    setSuccessMsg('Wallet disconnected.');
   };
 
   // Fetch all jobs from the Intelligent Contract
@@ -316,13 +316,13 @@ export const App: React.FC = () => {
   // 1. Create Job & Lock Escrow
   const handleCreateJob = async (slaSpec: string, repoUrl: string, bountyGen: string, category: string) => {
     if (!client || !account) {
-      throw new Error('Vui lòng kết nối ví MetaMask.');
+      throw new Error('Please connect your MetaMask wallet.');
     }
     if (!isCorrectNetwork) {
-      throw new Error('Vui lòng chuyển sang mạng GenLayer studionet (Chain ID 61999).');
+      throw new Error('Please switch to GenLayer Studionet (Chain ID 61999).');
     }
     if (!contractAddress || !contractAddress.startsWith('0x') || contractAddress === '0x0000000000000000000000000000000000000000') {
-      throw new Error('Chưa kết nối Intelligent Contract hợp lệ.');
+      throw new Error('No valid Intelligent Contract configured.');
     }
 
     setIsTxPending(true);
@@ -336,7 +336,7 @@ export const App: React.FC = () => {
         value: weiAmount,
       });
       setLatestTxHash(hash);
-      setSuccessMsg('Giao dịch đã gửi! Đang chờ xác nhận trên studionet...');
+      setSuccessMsg('Transaction broadcasted! Awaiting confirmation on GenLayer Studionet...');
 
       const receipt = await client.waitForTransactionReceipt({
         hash,
@@ -345,10 +345,10 @@ export const App: React.FC = () => {
       });
 
       if (receipt && (receipt.status === 0 || String(receipt.status) === '0x0')) {
-        throw new Error('Giao dịch bị revert on-chain. Hãy kiểm tra bạn có đủ số dư GEN.');
+        throw new Error('Transaction reverted on-chain. Please ensure you have sufficient GEN balance.');
       }
 
-      setSuccessMsg(`Đã tạo SLA Job & khóa Escrow thành công! (Tx: ${hash.slice(0, 10)}...)`);
+      setSuccessMsg(`SLA Job created & Escrow locked successfully! (Tx: ${hash.slice(0, 10)}...)`);
       await fetchOnChainData();
       await fetchBalance(account);
     } finally {
@@ -359,10 +359,10 @@ export const App: React.FC = () => {
   // 2. Submit Deliverable PR
   const handleSubmitPR = async (jobId: string, prUrl: string) => {
     if (!client || !account) {
-      throw new Error('Vui lòng kết nối ví MetaMask.');
+      throw new Error('Please connect your MetaMask wallet.');
     }
     if (!contractAddress || !contractAddress.startsWith('0x') || contractAddress === '0x0000000000000000000000000000000000000000') {
-      throw new Error('Chưa kết nối Intelligent Contract hợp lệ.');
+      throw new Error('No valid Intelligent Contract configured.');
     }
 
     setIsTxPending(true);
@@ -375,7 +375,7 @@ export const App: React.FC = () => {
         value: BigInt(0),
       });
       setLatestTxHash(hash);
-      setSuccessMsg('Đang gửi PR nghiệm thu lên contract...');
+      setSuccessMsg('Submitting PR deliverable to contract...');
 
       await client.waitForTransactionReceipt({
         hash,
@@ -383,7 +383,7 @@ export const App: React.FC = () => {
         retries: 120,
       });
 
-      setSuccessMsg(`Đã nộp PR nghiệm thu! Sẵn sàng cho AI Consensus phán xử.`);
+      setSuccessMsg('PR deliverable submitted! Ready for on-chain AI Jury adjudication.');
       await fetchOnChainData();
     } finally {
       setIsTxPending(false);
@@ -393,11 +393,11 @@ export const App: React.FC = () => {
   // 3. Adjudicate SLA
   const handleAdjudicate = async (jobId: string) => {
     if (!client || !account) {
-      setErrorMsg('Vui lòng kết nối ví MetaMask.');
+      setErrorMsg('Please connect your MetaMask wallet.');
       return;
     }
     if (!contractAddress || !contractAddress.startsWith('0x') || contractAddress === '0x0000000000000000000000000000000000000000') {
-      setErrorMsg('Chưa kết nối Intelligent Contract hợp lệ.');
+      setErrorMsg('No valid Intelligent Contract configured.');
       return;
     }
 
@@ -411,7 +411,7 @@ export const App: React.FC = () => {
         value: BigInt(0),
       });
       setLatestTxHash(hash);
-      setSuccessMsg('Đang chạy đồng thuận: Các validator AI đang render GitHub PR trực tiếp on-chain...');
+      setSuccessMsg('Running AI consensus: Validator nodes are rendering GitHub PR directly on-chain...');
 
       const receipt = await client.waitForTransactionReceipt({
         hash,
@@ -420,14 +420,14 @@ export const App: React.FC = () => {
       });
 
       if (receipt && (receipt.status === 0 || String(receipt.status) === '0x0')) {
-        throw new Error('Phán xử thất bại hoặc bị revert trên GenLayer.');
+        throw new Error('Adjudication failed or reverted on GenLayer.');
       }
 
-      setSuccessMsg(`Phán xử hoàn tất! Phán quyết đồng thuận AI đã được ghi nhận on-chain.`);
+      setSuccessMsg('Adjudication completed! AI Consensus verdict recorded on-chain.');
       await fetchOnChainData();
       await fetchBalance(account);
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Phán xử thất bại trên GenLayer.');
+      setErrorMsg(err?.message || 'Adjudication failed on GenLayer.');
     } finally {
       setAdjudicatingJobId(null);
     }
@@ -436,10 +436,10 @@ export const App: React.FC = () => {
   // 4. Appeal Adjudication
   const handleAppealJob = async (jobId: string, bondGen: string) => {
     if (!client || !account) {
-      throw new Error('Vui lòng kết nối ví MetaMask.');
+      throw new Error('Please connect your MetaMask wallet.');
     }
     if (!contractAddress || !contractAddress.startsWith('0x') || contractAddress === '0x0000000000000000000000000000000000000000') {
-      throw new Error('Chưa kết nối Intelligent Contract hợp lệ.');
+      throw new Error('No valid Intelligent Contract configured.');
     }
 
     setIsTxPending(true);
@@ -453,7 +453,7 @@ export const App: React.FC = () => {
         value: bondWei,
       });
       setLatestTxHash(hash);
-      setSuccessMsg('Đang nộp đơn kháng cáo on-chain...');
+      setSuccessMsg('Submitting appeal transaction on-chain...');
 
       await client.waitForTransactionReceipt({
         hash,
@@ -461,7 +461,7 @@ export const App: React.FC = () => {
         retries: 120,
       });
 
-      setSuccessMsg(`Đã nộp đơn kháng cáo thành công! Vụ việc đã được chuyển lên Hội đồng Phúc thẩm AI.`);
+      setSuccessMsg('Appeal filed successfully! Case escalated to AI Appellate Council.');
       await fetchOnChainData();
       await fetchBalance(account);
     } finally {
@@ -473,10 +473,10 @@ export const App: React.FC = () => {
   const handleCancelJob = async (jobId: string) => {
     if (!client || !account) return;
     if (!contractAddress || !contractAddress.startsWith('0x') || contractAddress === '0x0000000000000000000000000000000000000000') {
-      setErrorMsg('Chưa kết nối Intelligent Contract hợp lệ.');
+      setErrorMsg('No valid Intelligent Contract configured.');
       return;
     }
-    if (!confirm(`Hủy job ${jobId} và hoàn lại tiền bảo chứng Escrow?`)) return;
+    if (!confirm(`Cancel job ${jobId} and refund escrowed funds to your wallet?`)) return;
 
     setIsTxPending(true);
     setErrorMsg(null);
@@ -489,11 +489,11 @@ export const App: React.FC = () => {
       });
       setLatestTxHash(hash);
       await client.waitForTransactionReceipt({ hash, interval: 2000, retries: 120 });
-      setSuccessMsg(`Job ${jobId} đã hủy. Tiền Escrow đã được hoàn lại.`);
+      setSuccessMsg(`Job ${jobId} cancelled. Escrow refund completed.`);
       await fetchOnChainData();
       await fetchBalance(account);
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Không thể hủy job.');
+      setErrorMsg(err?.message || 'Failed to cancel job.');
     } finally {
       setIsTxPending(false);
     }
@@ -1141,12 +1141,12 @@ export const App: React.FC = () => {
             <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-cyan-950/80 border border-cyan-500/50 flex items-center justify-center text-cyan-400 shadow-lg shadow-cyan-500/20">
               <Wallet className="w-7 h-7 animate-pulse text-cyan-400" />
             </div>
-            <h3 className="text-lg font-bold text-white mb-2">Đang mở kết nối MetaMask...</h3>
+            <h3 className="text-lg font-bold text-white mb-2">Connecting MetaMask...</h3>
             <p className="text-sm text-slate-300 leading-relaxed mb-4">
-              Vui lòng mở tiện ích <strong>MetaMask (icon con cáo)</strong> trên thanh công cụ trình duyệt để nhập mật khẩu hoặc nhấn <strong>Next / Connect</strong>.
+              Please open the <strong>MetaMask extension</strong> from your browser toolbar to unlock your wallet and approve <strong>Next / Connect</strong>.
             </p>
             <div className="p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/20 text-xs text-cyan-300 mb-5 text-left">
-              💡 <strong>Lưu ý:</strong> Cửa sổ popup MetaMask có thể bị trình duyệt ẩn ở góc trên bên phải thanh Extension. Hãy nhấp trực tiếp vào biểu tượng con cáo để phê duyệt.
+              💡 <strong>Note:</strong> Browser may minimize the MetaMask popup in your extension tray. Click the MetaMask fox icon in your toolbar to approve.
             </div>
             <button
               onClick={() => {
@@ -1155,7 +1155,7 @@ export const App: React.FC = () => {
               }}
               className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
             >
-              Đóng thông báo
+              Dismiss
             </button>
           </div>
         </div>
