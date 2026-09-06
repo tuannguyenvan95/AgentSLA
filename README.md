@@ -4,7 +4,7 @@
 > **Network:** GenLayer `studionet` (Chain ID: `61999` / `0xF1EF`, RPC: `https://studio.genlayer.com/api`)  
 > **Target Portal:** GenLayer Portal (Builders Track — `portal.genlayer.foundation`)  
 > **GitHub Repository:** [https://github.com/tuannguyenvan95/AgentSLA](https://github.com/tuannguyenvan95/AgentSLA)  
-> **Live dApp URL (Vercel):** [https://agentsla-court.vercel.app](https://agentsla-court.vercel.app) (Mirror: [https://agentsla-escrow.vercel.app](https://agentsla-escrow.vercel.app))
+> **Live dApp URL (Vercel):** [https://agentsla-court.vercel.app](https://agentsla-court.vercel.app)
 
 ---
 
