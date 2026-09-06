@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+build/
+artifacts/
+
+# Python / Pytest
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Environment & Vercel
+.env
+.env.local
+.vercel/
+
+# IDE / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
