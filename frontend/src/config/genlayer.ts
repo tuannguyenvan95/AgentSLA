@@ -36,7 +36,7 @@ export const STUDIONET_CONFIG = {
     symbol: 'GEN',
     decimals: 18,
   },
-  blockExplorerUrl: 'https://genlayer-explorer.vercel.app',
+  blockExplorerUrl: 'https://explorer-studio.genlayer.com',
 };
 
 /**

@@ -824,7 +824,7 @@ export const App: React.FC = () => {
                 GenLayer Studio
               </a>
               <a
-                href="https://genlayer-explorer.vercel.app"
+                href="https://explorer-studio.genlayer.com"
                 target="_blank"
                 rel="noreferrer"
                 className="hover:text-cyan-400 transition-colors"

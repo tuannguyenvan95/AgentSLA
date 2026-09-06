@@ -5,7 +5,7 @@ TARGET NETWORK:
   Network Name: GenLayer Studio Network (studionet)
   Chain ID: 61999 (0xF1EF)
   RPC Endpoint: https://studio.genlayer.com/api
-  Explorer: https://genlayer-explorer.vercel.app
+  Explorer: https://explorer-studio.genlayer.com
 
 CRITICAL DEPLOYMENT INSTRUCTIONS:
 1. Open GenLayer Studio: https://studio.genlayer.com/run-debug

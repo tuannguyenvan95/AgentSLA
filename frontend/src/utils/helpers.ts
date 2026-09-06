@@ -161,7 +161,7 @@ export function getScoreGrade(score: number): { grade: string; color: string } {
 }
 
 export function getExplorerUrl(hash: string, type: 'tx' | 'address' = 'tx'): string {
-  const base = 'https://genlayer-explorer.vercel.app';
+  const base = 'https://explorer-studio.genlayer.com';
   return `${base}/${type}/${hash}`;
 }
 

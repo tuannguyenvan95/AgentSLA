@@ -85,7 +85,7 @@ class Contract(gl.Contract):
         job_id = f"sla-{int(self.job_counter)}"
 
         empty_worker = Address("0x0000000000000000000000000000000000000000")
-        current_block = u256(gl.block.number)
+        current_block = u256(int(self.job_counter))
 
         new_job = Job(
             job_id=job_id,
