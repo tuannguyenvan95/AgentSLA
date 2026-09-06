@@ -51,9 +51,24 @@ export const App: React.FC = () => {
     });
   }, [account]);
 
-  // 100% Real On-Chain State (No mock / demo data)
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [totalEscrowLocked, setTotalEscrowLocked] = useState<string>('0');
+  // 100% Real On-Chain State with SWR local caching to prevent rate-limit flickering
+  const [jobs, setJobs] = useState<Job[]>(() => {
+    try {
+      const cached = localStorage.getItem(`agentsla_cached_jobs_${contractAddress}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return [];
+  });
+  const [totalEscrowLocked, setTotalEscrowLocked] = useState<string>(() => {
+    try {
+      return localStorage.getItem(`agentsla_cached_escrow_${contractAddress}`) || '0';
+    } catch {
+      return '0';
+    }
+  });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isTxPending, setIsTxPending] = useState<boolean>(false);
   const [adjudicatingJobId, setAdjudicatingJobId] = useState<string | null>(null);
@@ -179,7 +194,7 @@ export const App: React.FC = () => {
     setSuccessMsg('Wallet disconnected.');
   };
 
-  // Fetch all jobs from the Intelligent Contract
+  // Fetch all jobs from the Intelligent Contract (with SWR caching & rate-limit resilience)
   const fetchOnChainData = useCallback(async () => {
     if (!contractAddress || contractAddress === '0x0000000000000000000000000000000000000000') {
       setJobs([]);
@@ -187,8 +202,15 @@ export const App: React.FC = () => {
       return;
     }
 
+    // Skip polling if the browser tab is hidden/in background
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+      return;
+    }
+
     setIsLoading(true);
     try {
+      let statsTotalJobs: number | null = null;
+
       // 1. Fetch Stats
       try {
         const statsRaw = await client.readContract({
@@ -197,26 +219,71 @@ export const App: React.FC = () => {
           args: [],
         });
         const stats = typeof statsRaw === 'string' ? JSON.parse(statsRaw) : statsRaw;
-        if (stats && stats.total_escrow_locked) {
-          setTotalEscrowLocked(stats.total_escrow_locked);
+        if (stats) {
+          if (stats.total_escrow_locked !== undefined) {
+            setTotalEscrowLocked(stats.total_escrow_locked);
+            try {
+              localStorage.setItem(`agentsla_cached_escrow_${contractAddress}`, stats.total_escrow_locked);
+            } catch {}
+          }
+          if (typeof stats.total_jobs === 'number') {
+            statsTotalJobs = stats.total_jobs;
+          }
         }
       } catch (e) {
-        console.warn('get_stats failed:', e);
+        console.warn('get_stats call warning (rate-limit or network):', e);
       }
 
-      // 2. Fetch Job Count
-      const countRes = await client.readContract({
-        address: contractAddress as `0x${string}`,
-        functionName: 'get_job_count',
-        args: [],
-      });
-      const totalCount = Number(countRes);
+      // 2. Determine Job Count (from stats or fallback to get_job_count)
+      let totalCount = statsTotalJobs;
+      if (totalCount === null) {
+        try {
+          const countRes = await client.readContract({
+            address: contractAddress as `0x${string}`,
+            functionName: 'get_job_count',
+            args: [],
+          });
+          totalCount = Number(countRes);
+        } catch (cntErr) {
+          console.warn('get_job_count warning:', cntErr);
+        }
+      }
 
-      // 3. Fetch each job in parallel
+      // If both RPC calls failed (e.g. rate limit), keep existing cached jobs intact!
+      if (totalCount === null) {
+        return;
+      }
+
+      // If contract legitimately has 0 jobs
+      if (totalCount === 0) {
+        setJobs([]);
+        try {
+          localStorage.removeItem(`agentsla_cached_jobs_${contractAddress}`);
+        } catch {}
+        return;
+      }
+
+      // 3. Build current cache map to allow instant fallback and reuse
+      const currentCacheMap = new Map<string, Job>();
+      setJobs((prev) => {
+        prev.forEach((j) => currentCacheMap.set(j.job_id, j));
+        return prev;
+      });
+
+      // 4. Fetch jobs with fallback to existing cached job on transient RPC errors
       const jobPromises: Promise<Job | null>[] = [];
       for (let i = totalCount - 1; i >= 0; i--) {
         jobPromises.push(
           (async () => {
+            const expectedId = `sla-${i + 1}`;
+            const existingJob = currentCacheMap.get(expectedId);
+
+            // Optimization: If a job is already in terminal resolved state (APPROVED/REJECTED/CANCELLED),
+            // its on-chain data is immutable unless an appeal occurs. Reusing it saves 2 RPC calls per cycle!
+            if (existingJob && (existingJob.status === 2 || existingJob.status === 3 || existingJob.status === 4)) {
+              return existingJob;
+            }
+
             try {
               const jobId = await client.readContract({
                 address: contractAddress as `0x${string}`,
@@ -228,10 +295,12 @@ export const App: React.FC = () => {
                 functionName: 'get_job',
                 args: [jobId],
               });
-              return typeof rawJob === 'string' ? JSON.parse(rawJob) : rawJob;
+              const parsed = typeof rawJob === 'string' ? JSON.parse(rawJob) : rawJob;
+              return parsed;
             } catch (err) {
-              console.error(`Failed to load job index ${i}:`, err);
-              return null;
+              console.warn(`Transient RPC issue loading job index ${i}:`, err);
+              // Fall back to existing cached job so it never disappears!
+              return existingJob || null;
             }
           })()
         );
@@ -239,9 +308,15 @@ export const App: React.FC = () => {
 
       const results = await Promise.all(jobPromises);
       const validJobs = results.filter((j): j is Job => j !== null);
-      setJobs(validJobs);
+
+      if (validJobs.length > 0) {
+        setJobs(validJobs);
+        try {
+          localStorage.setItem(`agentsla_cached_jobs_${contractAddress}`, JSON.stringify(validJobs));
+        } catch {}
+      }
     } catch (err: any) {
-      console.error('Failed to fetch on-chain jobs:', err);
+      console.warn('Transient error in fetchOnChainData:', err);
     } finally {
       setIsLoading(false);
     }
@@ -302,13 +377,28 @@ export const App: React.FC = () => {
     fetchOnChainData();
   }, [fetchOnChainData]);
 
-  // Auto-refresh interval
+  // Auto-refresh interval (with visibility awareness to respect RPC rate limits)
   useEffect(() => {
     const interval = setInterval(() => {
-      fetchOnChainData();
-      if (account) fetchBalance(account);
-    }, 20000);
-    return () => clearInterval(interval);
+      if (typeof document === 'undefined' || document.visibilityState === 'visible') {
+        fetchOnChainData();
+        if (account) fetchBalance(account);
+      }
+    }, 30000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchOnChainData();
+        if (account) fetchBalance(account);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [fetchOnChainData, account, fetchBalance]);
 
   // Transaction Actions
