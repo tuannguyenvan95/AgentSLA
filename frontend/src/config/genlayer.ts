@@ -2,7 +2,7 @@ import { createClient } from 'genlayer-js';
 import { studionet } from 'genlayer-js/chains';
 
 // Official Deployed Intelligent Contract on GenLayer Studionet (Chain 61999)
-export const DEFAULT_CONTRACT_ADDRESS = '0x29486f9b2183FE278DA68DD838d4a581F1b4E449';
+export const DEFAULT_CONTRACT_ADDRESS = '0xFF9f85509d24567E1BD2C4018a92d263A333E633';
 
 export function getContractAddress(): string {
   try {
@@ -12,7 +12,8 @@ export function getContractAddress(): string {
       // Purge zero address and legacy/broken contract addresses
       if (
         trimmed.toLowerCase() === '0x0000000000000000000000000000000000000000' ||
-        trimmed.toLowerCase() === '0x20f857d9b26d74d1b2b6546ffdf295510d210e1b'
+        trimmed.toLowerCase() === '0x20f857d9b26d74d1b2b6546ffdf295510d210e1b' ||
+        trimmed.toLowerCase() === '0x29486f9b2183fe278da68dd838d4a581f1b4e449'
       ) {
         localStorage.removeItem('agentsla_contract_address');
         return DEFAULT_CONTRACT_ADDRESS;
