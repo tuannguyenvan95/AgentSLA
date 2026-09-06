@@ -3,19 +3,25 @@ export interface Job {
   creator: string;
   worker: string;
   bounty_amount: string;
+  appeal_bond: string;
+  category: string; // "SMART_CONTRACT", "SECURITY_AUDIT", "FULL_STACK", "DOCS_DEV"
   repo_url: string;
   sla_spec: string;
   pr_url: string;
-  status: number; // 0: OPEN, 1: IN_REVIEW, 2: RESOLVED_SUCCESS, 3: RESOLVED_REJECTED, 4: CANCELLED
-  verdict: string; // "PENDING", "APPROVED", "REJECTED", "CANCELLED"
+  status: number; // 0: OPEN, 1: IN_REVIEW, 2: RESOLVED_SUCCESS, 3: RESOLVED_REJECTED, 4: CANCELLED, 5: IN_APPEAL
+  verdict: string; // "PENDING", "APPROVED", "REJECTED", "CANCELLED", "IN_APPEAL"
   reason: string;
   confidence: number;
+  spec_score: number;
+  quality_score: number;
+  test_score: number;
+  appeal_count: number;
   created_at_block: string;
 }
 
 export function formatAddress(address: string): string {
   if (!address || address === '0x0000000000000000000000000000000000000000') {
-    return 'Unclaimed';
+    return 'Unassigned';
   }
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
@@ -94,6 +100,15 @@ export function getStatusInfo(status: number) {
         badge: 'border-slate-600 text-slate-400 bg-slate-800/40',
         dot: 'bg-slate-500',
       };
+    case 5:
+      return {
+        label: 'IN APPEAL',
+        color: 'text-purple-400',
+        bg: 'bg-purple-950/60',
+        border: 'border-purple-500/40',
+        badge: 'border-purple-500/50 text-purple-300 bg-purple-900/40',
+        dot: 'bg-purple-400 animate-bounce',
+      };
     default:
       return {
         label: 'UNKNOWN',
@@ -104,6 +119,45 @@ export function getStatusInfo(status: number) {
         dot: 'bg-slate-500',
       };
   }
+}
+
+export function getCategoryInfo(category?: string) {
+  switch (category) {
+    case 'SECURITY_AUDIT':
+      return {
+        label: 'Security Audit',
+        badge: 'border-rose-500/30 bg-rose-950/40 text-rose-300',
+        dot: 'bg-rose-400',
+      };
+    case 'FULL_STACK':
+      return {
+        label: 'Full-Stack',
+        badge: 'border-blue-500/30 bg-blue-950/40 text-blue-300',
+        dot: 'bg-blue-400',
+      };
+    case 'DOCS_DEV':
+      return {
+        label: 'Docs & SDK',
+        badge: 'border-teal-500/30 bg-teal-950/40 text-teal-300',
+        dot: 'bg-teal-400',
+      };
+    case 'SMART_CONTRACT':
+    default:
+      return {
+        label: 'Smart Contract',
+        badge: 'border-cyan-500/30 bg-cyan-950/40 text-cyan-300',
+        dot: 'bg-cyan-400',
+      };
+  }
+}
+
+export function getScoreGrade(score: number): { grade: string; color: string } {
+  if (score >= 90) return { grade: 'A+', color: 'text-emerald-400' };
+  if (score >= 80) return { grade: 'A', color: 'text-emerald-300' };
+  if (score >= 70) return { grade: 'B', color: 'text-teal-300' };
+  if (score >= 60) return { grade: 'C', color: 'text-amber-400' };
+  if (score >= 50) return { grade: 'D', color: 'text-orange-400' };
+  return { grade: 'F', color: 'text-rose-400' };
 }
 
 export function getExplorerUrl(hash: string, type: 'tx' | 'address' = 'tx'): string {
