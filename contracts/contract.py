@@ -4,23 +4,12 @@ from dataclasses import dataclass
 import json
 
 
-def _addr_str(addr) -> str:
-    """Safely format an Address instance or string into a hex string."""
+def _addr_str(addr: Address) -> str:
+    """Safely format an Address instance into a hex string."""
     try:
         return addr.as_hex
     except Exception:
         return str(addr)
-
-
-def _get_caller() -> str:
-    """Safely retrieves caller address string from gl.message context."""
-    try:
-        return _addr_str(gl.message.sender_address).lower()
-    except Exception:
-        try:
-            return _addr_str(getattr(gl.message, "sender", "0x0000000000000000000000000000000000000000")).lower()
-        except Exception:
-            return "0x0000000000000000000000000000000000000000"
 
 
 @allow_storage
@@ -28,8 +17,8 @@ def _get_caller() -> str:
 class Job:
     """Storage struct representing an autonomous sub-agent SLA bounty job."""
     job_id: str
-    creator: str
-    worker: str
+    creator: Address
+    worker: Address
     bounty_amount: bigint
     appeal_bond: bigint            # Escrowed bond staked during an appeal
     category: str                  # "SMART_CONTRACT", "SECURITY_AUDIT", "FULL_STACK", "DOCS_DEV"
@@ -92,16 +81,15 @@ class Contract(gl.Contract):
         if clean_category not in ("SMART_CONTRACT", "SECURITY_AUDIT", "FULL_STACK", "DOCS_DEV"):
             clean_category = "SMART_CONTRACT"
 
-        self.job_counter = u64(int(self.job_counter) + 1)
+        self.job_counter = self.job_counter + u64(1)
         job_id = f"sla-{int(self.job_counter)}"
 
-        caller = _get_caller()
-        empty_worker = "0x0000000000000000000000000000000000000000"
+        empty_worker = Address("0x0000000000000000000000000000000000000000")
         current_block = u256(int(self.job_counter))
 
         new_job = Job(
             job_id=job_id,
-            creator=caller,
+            creator=gl.message.sender,
             worker=empty_worker,
             bounty_amount=bounty,
             appeal_bond=bigint(0),
@@ -142,8 +130,7 @@ class Contract(gl.Contract):
         if not cleaned_url or not cleaned_url.startswith("http"):
             raise gl.UserError("Valid GitHub Pull Request URL is required.")
 
-        caller = _get_caller()
-        job.worker = caller
+        job.worker = gl.message.sender
         job.pr_url = cleaned_url
         job.status = u8(1)  # IN_REVIEW
         job.reason = "PR deliverable submitted. Ready for on-chain AI jury adjudication."
@@ -314,10 +301,10 @@ Provide your evaluation as pure JSON with no markdown backticks or commentary:
         # Automatic payout or refund via GenLayer native transfer
         if verdict == "APPROVED":
             job.status = u8(2)  # RESOLVED_SUCCESS
-            gl.get_contract_at(Address(job.worker)).emit_transfer(value=u256(bounty_val))
+            gl.get_contract_at(job.worker).emit_transfer(value=u256(bounty_val))
         else:
             job.status = u8(3)  # RESOLVED_REJECTED
-            gl.get_contract_at(Address(job.creator)).emit_transfer(value=u256(bounty_val))
+            gl.get_contract_at(job.creator).emit_transfer(value=u256(bounty_val))
 
     @gl.public.write.payable
     def appeal_adjudication(self, job_id: str) -> None:
@@ -333,8 +320,7 @@ Provide your evaluation as pure JSON with no markdown backticks or commentary:
         if job.status not in (u8(2), u8(3)):
             raise gl.UserError(f"Job {job_id} is not in a resolved state eligible for appeal.")
 
-        caller = _get_caller()
-        if caller != job.creator.lower() and caller != job.worker.lower():
+        if gl.message.sender != job.creator and gl.message.sender != job.worker:
             raise gl.UserError("Only the Master Agent (creator) or Sub-Agent (worker) can appeal this decision.")
 
         # Minimum appeal bond: at least 25% of original bounty or > 0
@@ -350,7 +336,7 @@ Provide your evaluation as pure JSON with no markdown backticks or commentary:
         job.appeal_count = job.appeal_count + u8(1)
         job.status = u8(5)  # IN_APPEAL
         job.verdict = "IN_APPEAL"
-        job.reason = f"Appellate review triggered by {caller}. Staked bond: {int(bonded)} wei."
+        job.reason = f"Appellate review triggered by {gl.message.sender}. Staked bond: {int(bonded)} wei."
         self.total_appeals_processed = self.total_appeals_processed + u32(1)
 
     @gl.public.write
@@ -362,8 +348,7 @@ Provide your evaluation as pure JSON with no markdown backticks or commentary:
             raise gl.UserError(f"Job {job_id} does not exist.")
 
         job = self.jobs[job_id]
-        caller = _get_caller()
-        if caller != job.creator.lower():
+        if gl.message.sender != job.creator:
             raise gl.UserError("Only the job creator can cancel this job.")
 
         if job.status != u8(0):
@@ -376,7 +361,7 @@ Provide your evaluation as pure JSON with no markdown backticks or commentary:
         bounty_val = job.bounty_amount
         self.total_escrow_locked = self.total_escrow_locked - bounty_val
 
-        gl.get_contract_at(Address(job.creator)).emit_transfer(value=u256(bounty_val))
+        gl.get_contract_at(job.creator).emit_transfer(value=u256(bounty_val))
 
     # --- Read-only Views ---
 

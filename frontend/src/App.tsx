@@ -572,21 +572,29 @@ export const App: React.FC = () => {
         )}
 
         {successMsg && (
-          <div className="mb-6 p-4 rounded-xl bg-emerald-950/70 border border-emerald-500/50 text-emerald-300 text-sm flex items-center justify-between shadow-lg shadow-emerald-950/50 animate-in fade-in">
-            <div className="flex items-center gap-2.5">
+          <div className="mb-6 p-4 rounded-2xl bg-emerald-950/70 border border-emerald-500/50 text-emerald-300 text-sm flex items-center justify-between shadow-xl shadow-emerald-950/40 backdrop-blur-md animate-in fade-in">
+            <div className="flex items-center gap-3 min-w-0">
               <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-              <span>{successMsg}</span>
+              <span className="truncate">{successMsg}</span>
             </div>
-            {latestTxHash && (
-              <a
-                href={getExplorerUrl(latestTxHash, 'tx')}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs underline hover:text-emerald-200 ml-4 font-mono flex items-center gap-1 shrink-0"
+            <div className="flex items-center gap-3 shrink-0 ml-4">
+              {latestTxHash && (
+                <a
+                  href={getExplorerUrl(latestTxHash, 'tx')}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs underline hover:text-emerald-200 font-mono flex items-center gap-1"
+                >
+                  Explorer <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+              <button
+                onClick={() => setSuccessMsg(null)}
+                className="text-xs text-emerald-400/80 hover:text-emerald-200 px-2 py-1 rounded bg-emerald-900/40 hover:bg-emerald-900/70 transition-colors"
               >
-                Explorer <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
+                ✕
+              </button>
+            </div>
           </div>
         )}
 
@@ -606,57 +614,126 @@ export const App: React.FC = () => {
         ) : (
           /* MARKETPLACE or MY_CONTRACTS */
           <div>
-            {/* Hero Banner / Pitch */}
-            <div className="relative rounded-2xl bg-gradient-to-b from-slate-900 via-slate-900/80 to-[#090d16] border border-cyan-500/20 p-6 sm:p-8 mb-8 overflow-hidden">
-              <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+            {/* HERO / BALANCED 2-COLUMN PLATFORM BANNER */}
+            <div className="relative rounded-3xl bg-gradient-to-br from-slate-900 via-[#0b1220] to-[#070b14] border border-cyan-500/20 p-6 sm:p-8 lg:p-10 mb-8 overflow-hidden shadow-2xl">
+              <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-              <div className="relative z-10 max-w-3xl">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-400 text-xs font-mono mb-4">
-                  <Bot className="w-3.5 h-3.5" />
-                  <span>GenLayer Autonomous Adjudication Court</span>
+              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                {/* Left Column: Title, Subtitle, CTAs */}
+                <div className="lg:col-span-7 flex flex-col justify-center">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/70 border border-cyan-500/30 text-cyan-400 text-xs font-mono mb-4 w-fit">
+                    <Bot className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>GenLayer Autonomous Adjudication Court</span>
+                  </div>
+
+                  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white mb-4 leading-tight">
+                    {activeNavTab === 'MY_CONTRACTS' ? 'My Active SLA Engagements' : 'Verifiable SLA Enforcement for the '}
+                    {activeNavTab !== 'MY_CONTRACTS' && (
+                      <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
+                        Agentic Economy
+                      </span>
+                    )}
+                  </h1>
+
+                  <p className="text-sm sm:text-base text-slate-300 leading-relaxed mb-6">
+                    Master Agents commission specialized Sub-Agents with natural language SLAs and escrowed GEN bounties. 
+                    GenLayer AI validators fetch live GitHub PR diffs on-chain via <code className="text-cyan-300 font-mono text-xs bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">gl.nondet.web.render</code>, 
+                    reach subjective consensus on multi-dimensional criteria (Specification, Quality, Tests), and automatically settle escrow.
+                  </p>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      onClick={() => {
+                        if (!account) {
+                          handleConnectWallet();
+                        } else {
+                          setIsCreateOpen(true);
+                        }
+                      }}
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:-translate-y-0.5 active:translate-y-0"
+                    >
+                      <PlusCircle className="w-4 h-4" />
+                      <span>Commission Sub-Agent & Lock Escrow</span>
+                    </button>
+
+                    <a
+                      href={getExplorerUrl(contractAddress, 'address')}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 hover:border-cyan-500/40 text-slate-300 hover:text-white text-sm font-medium transition-all shadow-sm"
+                    >
+                      <Terminal className="w-4 h-4 text-cyan-400" />
+                      <span>Contract on Explorer</span>
+                      <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+                    </a>
+                  </div>
                 </div>
 
-                <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white mb-3">
-                  {activeNavTab === 'MY_CONTRACTS' ? 'My Active SLA Engagements' : 'Verifiable SLA Enforcement for the '}
-                  {activeNavTab !== 'MY_CONTRACTS' && (
-                    <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
-                      Agentic Economy
+                {/* Right Column: Visual Autonomous Protocol Pipeline Card */}
+                <div className="lg:col-span-5 bg-slate-950/70 border border-slate-800/90 rounded-2xl p-5 shadow-xl backdrop-blur-sm">
+                  <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-800/80">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                        SLA Execution Pipeline
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-500/30">
+                      On-Chain AI
                     </span>
-                  )}
-                </h1>
+                  </div>
 
-                <p className="text-sm sm:text-base text-slate-300 leading-relaxed mb-6">
-                  Master Agents autonomously commission specialized Sub-Agents with natural language SLAs and escrowed GEN bounties. 
-                  GenLayer AI validators fetch live GitHub PR diffs on-chain via <code className="text-cyan-300 font-mono text-xs bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">gl.nondet.web.render</code>, 
-                  reach subjective consensus on multi-dimensional criteria (Specification, Quality, Tests), and automatically settle escrow.
-                </p>
+                  {/* 4 Pipeline Stages */}
+                  <div className="space-y-2.5">
+                    <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/70 hover:border-cyan-500/30 transition-colors">
+                      <div className="w-6 h-6 rounded-lg bg-cyan-950 text-cyan-400 border border-cyan-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold mt-0.5">
+                        1
+                      </div>
+                      <div className="text-xs min-w-0">
+                        <div className="font-semibold text-slate-200">1. Escrow Locked</div>
+                        <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
+                          Master Agent locks GEN bounty in Intelligent Contract.
+                        </div>
+                      </div>
+                    </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    onClick={() => {
-                      if (!account) {
-                        handleConnectWallet();
-                      } else {
-                        setIsCreateOpen(true);
-                      }
-                    }}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-cyan-500/20"
-                  >
-                    <PlusCircle className="w-4 h-4" />
-                    <span>Commission Sub-Agent & Lock Escrow</span>
-                  </button>
+                    <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/70 hover:border-amber-500/30 transition-colors">
+                      <div className="w-6 h-6 rounded-lg bg-amber-950 text-amber-400 border border-amber-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold mt-0.5">
+                        2
+                      </div>
+                      <div className="text-xs min-w-0">
+                        <div className="font-semibold text-slate-200">2. Deliverable PR</div>
+                        <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
+                          Sub-Agent submits verifiable GitHub Pull Request diff.
+                        </div>
+                      </div>
+                    </div>
 
-                  <a
-                    href={getExplorerUrl(contractAddress, 'address')}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/40 text-slate-300 hover:text-white text-sm font-medium transition-all"
-                  >
-                    <Terminal className="w-4 h-4 text-cyan-400" />
-                    <span>Contract on Explorer</span>
-                    <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
-                  </a>
+                    <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/70 hover:border-purple-500/30 transition-colors">
+                      <div className="w-6 h-6 rounded-lg bg-purple-950 text-purple-300 border border-purple-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold mt-0.5">
+                        3
+                      </div>
+                      <div className="text-xs min-w-0">
+                        <div className="font-semibold text-slate-200">3. AI Jury Consensus</div>
+                        <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
+                          Validators render code and reach subjective consensus.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/70 hover:border-emerald-500/30 transition-colors">
+                      <div className="w-6 h-6 rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold mt-0.5">
+                        4
+                      </div>
+                      <div className="text-xs min-w-0">
+                        <div className="font-semibold text-slate-200">4. Settlement & Appeal</div>
+                        <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
+                          Automatic bounty release or decentralized appeal court.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -664,66 +741,86 @@ export const App: React.FC = () => {
             {/* Aggregated On-Chain Stats Bar */}
             <StatsBar jobs={jobs} totalEscrowLocked={totalEscrowLocked} />
 
-            {/* Category Filter Chips */}
-            <div className="flex items-center gap-2 pb-4 overflow-x-auto">
-              {[
-                { id: 'ALL', label: 'All Domains' },
-                { id: 'SMART_CONTRACT', label: 'Smart Contract' },
-                { id: 'SECURITY_AUDIT', label: 'Security Audit' },
-                { id: 'FULL_STACK', label: 'Full-Stack' },
-                { id: 'DOCS_DEV', label: 'Docs & SDK' },
-              ].map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-medium transition-all shrink-0 ${
-                    selectedCategory === cat.id
-                      ? 'bg-cyan-500 text-slate-950 font-bold shadow-md shadow-cyan-500/20'
-                      : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
+            {/* UNIFIED CONTROLS & FILTER BAR */}
+            <div className="bg-slate-900/70 border border-slate-800/90 rounded-2xl p-4 mb-6 shadow-lg backdrop-blur-md space-y-4">
+              {/* Top Row: Category Filter Chips */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800/70">
+                <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
+                  <span className="text-xs font-mono text-slate-400 mr-2 uppercase tracking-wider font-semibold shrink-0">
+                    Category:
+                  </span>
+                  {[
+                    { id: 'ALL', label: 'All Domains' },
+                    { id: 'SMART_CONTRACT', label: 'Smart Contract' },
+                    { id: 'SECURITY_AUDIT', label: 'Security Audit' },
+                    { id: 'FULL_STACK', label: 'Full-Stack' },
+                    { id: 'DOCS_DEV', label: 'Docs & SDK' },
+                  ].map((cat) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setSelectedCategory(cat.id)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-mono transition-all shrink-0 whitespace-nowrap ${
+                        selectedCategory === cat.id
+                          ? 'bg-cyan-500 text-slate-950 font-bold shadow-md shadow-cyan-500/20'
+                          : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                      }`}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
 
-            {/* Dashboard Filter Bar & Search */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-              {/* Status Tabs */}
-              <div className="flex items-center p-1 bg-slate-900/80 border border-slate-800 rounded-xl w-full md:w-auto overflow-x-auto">
-                {(['ALL', 'OPEN', 'IN_REVIEW', 'IN_APPEAL', 'RESOLVED'] as const).map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveFilter(tab)}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all shrink-0 ${
-                      activeFilter === tab
-                        ? 'bg-gradient-to-r from-cyan-500/20 to-emerald-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    {tab === 'ALL'
-                      ? `All (${jobs.length})`
-                      : tab === 'OPEN'
-                      ? `Open (${jobs.filter((j) => j.status === 0).length})`
-                      : tab === 'IN_REVIEW'
-                      ? `In Review (${jobs.filter((j) => j.status === 1).length})`
-                      : tab === 'IN_APPEAL'
-                      ? `In Appeal (${jobs.filter((j) => j.status === 5).length})`
-                      : `Resolved (${jobs.filter((j) => j.status === 2 || j.status === 3).length})`}
-                  </button>
-                ))}
+                <div className="text-xs font-mono text-slate-400 hidden sm:block shrink-0">
+                  Showing <span className="text-cyan-400 font-bold">{filteredJobs.length}</span> of <span className="text-slate-200 font-semibold">{jobs.length}</span> SLAs
+                </div>
               </div>
 
-              {/* Search Input */}
-              <div className="relative w-full md:w-72">
-                <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search SLA, repo, ID, or agent..."
-                  className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-900/80 border border-slate-800 focus:border-cyan-500 text-xs text-slate-200 placeholder:text-slate-500 outline-none font-mono"
-                />
+              {/* Bottom Row: Status Tabs & Search Input */}
+              <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                {/* Status Tabs */}
+                <div className="flex items-center gap-1 p-1 bg-slate-950/80 border border-slate-800 rounded-xl overflow-x-auto">
+                  {(['ALL', 'OPEN', 'IN_REVIEW', 'IN_APPEAL', 'RESOLVED'] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveFilter(tab)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all shrink-0 whitespace-nowrap ${
+                        activeFilter === tab
+                          ? 'bg-gradient-to-r from-cyan-500/20 to-emerald-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                          : 'text-slate-400 hover:text-slate-200 border border-transparent'
+                      }`}
+                    >
+                      {tab === 'ALL'
+                        ? `All (${jobs.length})`
+                        : tab === 'OPEN'
+                        ? `Open (${jobs.filter((j) => j.status === 0).length})`
+                        : tab === 'IN_REVIEW'
+                        ? `In Review (${jobs.filter((j) => j.status === 1).length})`
+                        : tab === 'IN_APPEAL'
+                        ? `In Appeal (${jobs.filter((j) => j.status === 5).length})`
+                        : `Resolved (${jobs.filter((j) => j.status === 2 || j.status === 3).length})`}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Search Input */}
+                <div className="relative w-full md:w-80">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search SLA, repo, ID, or agent..."
+                    className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-950/80 border border-slate-800 focus:border-cyan-500 text-xs text-slate-200 placeholder:text-slate-500 outline-none font-mono transition-colors"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-xs p-1"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -736,24 +833,26 @@ export const App: React.FC = () => {
                 </span>
               </div>
             ) : filteredJobs.length === 0 ? (
-              <div className="py-16 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-900/30">
-                <Scale className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-                <h3 className="text-base font-bold text-slate-300 mb-1">
+              <div className="py-16 px-4 text-center border border-dashed border-slate-800/90 rounded-3xl bg-slate-900/40 backdrop-blur-sm max-w-2xl mx-auto my-6 shadow-xl">
+                <div className="w-14 h-14 rounded-2xl bg-cyan-950/50 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mx-auto mb-4">
+                  <Scale className="w-7 h-7" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-200 mb-1.5">
                   {activeNavTab === 'MY_CONTRACTS'
                     ? 'You have no active contracts yet'
                     : 'No matching SLA Escrows Found'}
                 </h3>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto mb-4">
+                <p className="text-xs text-slate-400 max-w-sm mx-auto mb-6 leading-relaxed">
                   {activeNavTab === 'MY_CONTRACTS'
                     ? 'You have not commissioned any sub-agents or claimed any tasks with your connected wallet address.'
-                    : 'No contracts match your active filter and search query.'}
+                    : 'No contracts match your active filter and search query. Commission a new task or adjust your filters.'}
                 </p>
                 <button
                   onClick={() => {
                     if (!account) handleConnectWallet();
                     else setIsCreateOpen(true);
                   }}
-                  className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all hover:scale-105"
                 >
                   Commission SLA Bounty
                 </button>

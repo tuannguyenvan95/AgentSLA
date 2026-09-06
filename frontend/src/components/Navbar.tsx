@@ -134,16 +134,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Center: Main Navigation Tabs */}
-          <nav className="hidden md:flex items-center gap-1 bg-slate-900/90 border border-slate-800 p-1 rounded-xl">
+          <nav className="hidden md:flex items-center gap-1 bg-slate-900/90 border border-slate-800/90 p-1 rounded-xl shadow-inner">
             <button
               onClick={() => onSelectTab('MARKETPLACE')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                 activeTab === 'MARKETPLACE'
                   ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  : 'text-slate-400 hover:text-slate-200 border border-transparent'
               }`}
             >
-              <LayoutGrid className="w-3.5 h-3.5" />
+              <LayoutGrid className="w-3.5 h-3.5 shrink-0" />
               <span>Marketplace</span>
               {openCount > 0 && (
                 <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-cyan-950 text-cyan-400 border border-cyan-500/40 font-mono">
@@ -154,25 +154,25 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               onClick={() => onSelectTab('MY_CONTRACTS')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                 activeTab === 'MY_CONTRACTS'
                   ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  : 'text-slate-400 hover:text-slate-200 border border-transparent'
               }`}
             >
-              <UserCheck className="w-3.5 h-3.5" />
+              <UserCheck className="w-3.5 h-3.5 shrink-0" />
               <span>My Contracts</span>
             </button>
 
             <button
               onClick={() => onSelectTab('COURT_ROOM')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                 activeTab === 'COURT_ROOM'
                   ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  : 'text-slate-400 hover:text-slate-200 border border-transparent'
               }`}
             >
-              <Scale className="w-3.5 h-3.5" />
+              <Scale className="w-3.5 h-3.5 shrink-0" />
               <span>AI Jury Court</span>
               {appealCount > 0 && (
                 <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-purple-950 text-purple-300 border border-purple-500/40 font-mono animate-pulse">
@@ -183,31 +183,31 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               onClick={() => onSelectTab('ANALYTICS')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                 activeTab === 'ANALYTICS'
                   ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  : 'text-slate-400 hover:text-slate-200 border border-transparent'
               }`}
             >
-              <BarChart3 className="w-3.5 h-3.5" />
+              <BarChart3 className="w-3.5 h-3.5 shrink-0" />
               <span>Analytics</span>
             </button>
 
             <button
               onClick={() => onSelectTab('DOCS')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                 activeTab === 'DOCS'
                   ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  : 'text-slate-400 hover:text-slate-200 border border-transparent'
               }`}
             >
-              <BookOpen className="w-3.5 h-3.5" />
+              <BookOpen className="w-3.5 h-3.5 shrink-0" />
               <span>Architecture</span>
             </button>
           </nav>
 
           {/* Right: Actions & Comprehensive Wallet Profile */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             {/* Intelligent Contract Explorer Badge */}
             {contractAddress && (
               <a
@@ -215,11 +215,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 target="_blank"
                 rel="noreferrer"
                 title={`Intelligent Contract on Studionet: ${contractAddress}`}
-                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all border bg-cyan-950/40 border-cyan-500/30 text-cyan-300 hover:bg-cyan-900/40"
+                className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-mono transition-all border bg-slate-900/90 border-slate-800 text-cyan-300 hover:border-cyan-500/40 hover:bg-slate-800/80 shadow-sm whitespace-nowrap"
               >
                 <FileCode2 className="w-3.5 h-3.5 shrink-0 text-cyan-400" />
                 <span>{formatAddress(contractAddress)}</span>
-                <ExternalLink className="w-3 h-3 opacity-60" />
+                <ExternalLink className="w-3 h-3 opacity-60 shrink-0" />
               </a>
             )}
 
@@ -227,23 +227,23 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onRefresh}
               title="Refresh On-chain State"
-              className="p-2 text-slate-400 hover:text-cyan-400 hover:bg-slate-800/60 rounded-lg transition-colors border border-slate-800"
+              className="p-2 text-slate-400 hover:text-cyan-400 hover:bg-slate-800/80 rounded-xl transition-colors border border-slate-800 bg-slate-900/90 shadow-sm"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="w-3.5 h-3.5" />
             </button>
 
             {/* Network Badge */}
             {account && (
               <div>
                 {isCorrectNetwork ? (
-                  <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
+                  <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 text-xs font-mono shadow-sm whitespace-nowrap">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span>studionet (61999)</span>
+                    <span>studionet</span>
                   </div>
                 ) : (
                   <button
                     onClick={switchToStudionet}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs font-mono hover:bg-rose-900/60 transition-colors"
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs font-mono hover:bg-rose-900/60 transition-colors shadow-sm whitespace-nowrap"
                   >
                     <AlertTriangle className="w-3.5 h-3.5" />
                     <span>Switch Chain</span>
