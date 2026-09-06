@@ -11,7 +11,8 @@ import {
   Loader2,
   ExternalLink,
   Bot,
-  Wallet
+  Wallet,
+  ShieldCheck
 } from 'lucide-react';
 import { 
   getContractAddress,
@@ -19,7 +20,7 @@ import {
   switchToStudionet,
   getEthereumProvider
 } from './config/genlayer';
-import { Job, toWeiGEN, getExplorerUrl } from './utils/helpers';
+import { Job, toWeiGEN, formatGEN, getExplorerUrl } from './utils/helpers';
 import { Navbar, NavTab } from './components/Navbar';
 import { StatsBar } from './components/StatsBar';
 import { JobCard } from './components/JobCard';
@@ -62,6 +63,7 @@ export const App: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'OPEN' | 'IN_REVIEW' | 'IN_APPEAL' | 'RESOLVED'>('ALL');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [myRoleFilter, setMyRoleFilter] = useState<'ALL' | 'CREATOR' | 'WORKER'>('ALL');
 
   // Modals
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
@@ -497,14 +499,43 @@ export const App: React.FC = () => {
     }
   };
 
+  // Role-based filtering and computation for authenticated user
+  const myCreatedJobs = useMemo(() => {
+    if (!account) return [];
+    return jobs.filter((j) => j.creator.toLowerCase() === account.toLowerCase());
+  }, [jobs, account]);
+
+  const myWorkerJobs = useMemo(() => {
+    if (!account) return [];
+    return jobs.filter(
+      (j) => j.worker && j.worker !== '0x0000000000000000000000000000000000000000' && j.worker.toLowerCase() === account.toLowerCase()
+    );
+  }, [jobs, account]);
+
+  const myCreatedEscrowTotal = useMemo(() => {
+    return myCreatedJobs.reduce((acc, curr) => acc + BigInt(curr.bounty_amount), BigInt(0)).toString();
+  }, [myCreatedJobs]);
+
+  const myEarnedBountiesTotal = useMemo(() => {
+    return myWorkerJobs
+      .filter((j) => j.status === 2)
+      .reduce((acc, curr) => acc + BigInt(curr.bounty_amount), BigInt(0)).toString();
+  }, [myWorkerJobs]);
+
   // Filter and search
   const filteredJobs = jobs.filter((job) => {
-    // Dedicated Tab: My Contracts
+    // Dedicated Tab: My Contracts (Role-separated)
     if (activeNavTab === 'MY_CONTRACTS') {
       if (!account) return false;
       const isMyCreator = job.creator.toLowerCase() === account.toLowerCase();
-      const isMyWorker = job.worker.toLowerCase() === account.toLowerCase();
-      if (!isMyCreator && !isMyWorker) return false;
+      const isMyWorker = Boolean(
+        job.worker && 
+        job.worker !== '0x0000000000000000000000000000000000000000' && 
+        job.worker.toLowerCase() === account.toLowerCase()
+      );
+      if (myRoleFilter === 'CREATOR' && !isMyCreator) return false;
+      if (myRoleFilter === 'WORKER' && !isMyWorker) return false;
+      if (myRoleFilter === 'ALL' && !isMyCreator && !isMyWorker) return false;
     }
 
     // Status filter
@@ -614,129 +645,256 @@ export const App: React.FC = () => {
         ) : (
           /* MARKETPLACE or MY_CONTRACTS */
           <div>
-            {/* HERO / BALANCED 2-COLUMN PLATFORM BANNER */}
-            <div className="relative rounded-3xl bg-gradient-to-br from-slate-900 via-[#0b1220] to-[#070b14] border border-cyan-500/20 p-6 sm:p-8 lg:p-10 mb-8 overflow-hidden shadow-2xl">
-              <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-
-              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                {/* Left Column: Title, Subtitle, CTAs */}
-                <div className="lg:col-span-7 flex flex-col justify-center">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/70 border border-cyan-500/30 text-cyan-400 text-xs font-mono mb-4 w-fit">
-                    <Bot className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>GenLayer Autonomous Adjudication Court</span>
+            {/* CONDITIONAL BANNER: ROLE DASHBOARD (MY_CONTRACTS) vs PLATFORM HERO (MARKETPLACE) */}
+            {activeNavTab === 'MY_CONTRACTS' ? (
+              /* DEDICATED ROLE-BASED GOVERNANCE & PORTFOLIO BANNER */
+              <div className="relative rounded-3xl bg-gradient-to-br from-slate-900 via-[#0d1526] to-[#070c17] border border-cyan-500/30 p-6 sm:p-8 mb-8 overflow-hidden shadow-2xl">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-slate-800/80">
+                  <div>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-xs font-mono mb-2">
+                      <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Role-Based Governance & Portfolio</span>
+                    </div>
+                    <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
+                      My Autonomous Agent Engagements
+                    </h1>
+                    <p className="text-xs sm:text-sm text-slate-300 mt-1">
+                      Strict role separation between <strong className="text-cyan-300">Master Agent (Employer)</strong> and <strong className="text-emerald-300">Sub-Agent (Worker)</strong>.
+                    </p>
                   </div>
 
-                  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white mb-4 leading-tight">
-                    {activeNavTab === 'MY_CONTRACTS' ? 'My Active SLA Engagements' : 'Verifiable SLA Enforcement for the '}
-                    {activeNavTab !== 'MY_CONTRACTS' && (
-                      <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
-                        Agentic Economy
-                      </span>
-                    )}
-                  </h1>
-
-                  <p className="text-sm sm:text-base text-slate-300 leading-relaxed mb-6">
-                    Master Agents commission specialized Sub-Agents with natural language SLAs and escrowed GEN bounties. 
-                    GenLayer AI validators fetch live GitHub PR diffs on-chain via <code className="text-cyan-300 font-mono text-xs bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">gl.nondet.web.render</code>, 
-                    reach subjective consensus on multi-dimensional criteria (Specification, Quality, Tests), and automatically settle escrow.
-                  </p>
-
-                  <div className="flex flex-wrap items-center gap-3">
+                  {/* Role Switcher Tabs */}
+                  <div className="flex items-center p-1.5 bg-slate-950/90 border border-slate-800 rounded-2xl shadow-inner shrink-0 overflow-x-auto max-w-full">
                     <button
-                      onClick={() => {
-                        if (!account) {
-                          handleConnectWallet();
-                        } else {
-                          setIsCreateOpen(true);
-                        }
-                      }}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:-translate-y-0.5 active:translate-y-0"
+                      onClick={() => setMyRoleFilter('ALL')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap ${
+                        myRoleFilter === 'ALL'
+                          ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-slate-950 shadow-md'
+                          : 'text-slate-400 hover:text-slate-200'
+                      }`}
                     >
-                      <PlusCircle className="w-4 h-4" />
-                      <span>Commission Sub-Agent & Lock Escrow</span>
+                      ⭐ All ({myCreatedJobs.length + myWorkerJobs.length})
                     </button>
-
-                    <a
-                      href={getExplorerUrl(contractAddress, 'address')}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 hover:border-cyan-500/40 text-slate-300 hover:text-white text-sm font-medium transition-all shadow-sm"
+                    <button
+                      onClick={() => setMyRoleFilter('CREATOR')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap ${
+                        myRoleFilter === 'CREATOR'
+                          ? 'bg-cyan-500 text-slate-950 shadow-md'
+                          : 'text-slate-400 hover:text-slate-200'
+                      }`}
                     >
-                      <Terminal className="w-4 h-4 text-cyan-400" />
-                      <span>Contract on Explorer</span>
-                      <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
-                    </a>
+                      👑 Master Agent ({myCreatedJobs.length})
+                    </button>
+                    <button
+                      onClick={() => setMyRoleFilter('WORKER')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap ${
+                        myRoleFilter === 'WORKER'
+                          ? 'bg-emerald-500 text-slate-950 shadow-md'
+                          : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      ⚡ Sub-Agent ({myWorkerJobs.length})
+                    </button>
                   </div>
                 </div>
 
-                {/* Right Column: Visual Autonomous Protocol Pipeline Card */}
-                <div className="lg:col-span-5 bg-slate-950/70 border border-slate-800/90 rounded-2xl p-5 shadow-xl backdrop-blur-sm">
-                  <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-800/80">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
-                        SLA Execution Pipeline
-                      </span>
+                {/* Role-Specific Metric Cards */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+                  {myRoleFilter === 'CREATOR' ? (
+                    <>
+                      <div className="p-4 rounded-xl bg-slate-950/70 border border-cyan-500/30">
+                        <span className="text-[11px] font-mono text-slate-400 block">Total Escrow Locked</span>
+                        <div className="text-xl font-bold font-mono text-cyan-300 mt-1">{formatGEN(myCreatedEscrowTotal)}</div>
+                        <span className="text-[10px] text-slate-500 font-mono">Bounties in Escrow</span>
+                      </div>
+                      <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800">
+                        <span className="text-[11px] font-mono text-slate-400 block">Open Tasks</span>
+                        <div className="text-xl font-bold font-mono text-slate-100 mt-1">{myCreatedJobs.filter(j => j.status === 0).length}</div>
+                        <span className="text-[10px] text-slate-500 font-mono">Awaiting Sub-Agents</span>
+                      </div>
+                      <div className="p-4 rounded-xl bg-slate-950/70 border border-amber-500/30">
+                        <span className="text-[11px] font-mono text-slate-400 block">PRs Under Review</span>
+                        <div className="text-xl font-bold font-mono text-amber-400 mt-1">{myCreatedJobs.filter(j => j.status === 1).length}</div>
+                        <span className="text-[10px] text-slate-500 font-mono">Pending AI Consensus</span>
+                      </div>
+                      <div className="p-4 rounded-xl bg-slate-950/70 border border-emerald-500/30">
+                        <span className="text-[11px] font-mono text-slate-400 block">Settled Tasks</span>
+                        <div className="text-xl font-bold font-mono text-emerald-400 mt-1">{myCreatedJobs.filter(j => j.status === 2 || j.status === 3).length}</div>
+                        <span className="text-[10px] text-slate-500 font-mono">Passed or Reclaimed</span>
+                      </div>
+                    </>
+                  ) : myRoleFilter === 'WORKER' ? (
+                    <>
+                      <div className="p-4 rounded-xl bg-slate-950/70 border border-emerald-500/30">
+                        <span className="text-[11px] font-mono text-slate-400 block">Bounties Earned</span>
+                        <div className="text-xl font-bold font-mono text-emerald-400 mt-1">{formatGEN(myEarnedBountiesTotal)}</div>
+                        <span className="text-[10px] text-slate-500 font-mono">Auto-transferred to you</span>
+                      </div>
+                      <div className="p-4 rounded-xl bg-slate-950/70 border border-amber-500/30">
+                        <span className="text-[11px] font-mono text-slate-400 block">PRs In Review</span>
+                        <div className="text-xl font-bold font-mono text-amber-400 mt-1">{myWorkerJobs.filter(j => j.status === 1).length}</div>
+                        <span className="text-[10px] text-slate-500 font-mono">Awaiting Jury Verdict</span>
+                      </div>
+                      <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800">
+                        <span className="text-[11px] font-mono text-slate-400 block">Approved Deliverables</span>
+                        <div className="text-xl font-bold font-mono text-slate-100 mt-1">{myWorkerJobs.filter(j => j.status === 2).length}</div>
+                        <span className="text-[10px] text-slate-500 font-mono">SLA Spec Compliant</span>
+                      </div>
+                      <div className="p-4 rounded-xl bg-slate-950/70 border border-purple-500/30">
+                        <span className="text-[11px] font-mono text-slate-400 block">Appeals Active</span>
+                        <div className="text-xl font-bold font-mono text-purple-300 mt-1">{myWorkerJobs.filter(j => j.status === 5).length}</div>
+                        <span className="text-[10px] text-slate-500 font-mono">Appellate Court Docket</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="p-4 rounded-xl bg-slate-950/70 border border-cyan-500/30">
+                        <span className="text-[11px] font-mono text-slate-400 block">👑 Master Agent Tasks</span>
+                        <div className="text-xl font-bold font-mono text-cyan-300 mt-1">{myCreatedJobs.length} commissioned</div>
+                        <span className="text-[10px] text-slate-500 font-mono">Where you are Creator</span>
+                      </div>
+                      <div className="p-4 rounded-xl bg-slate-950/70 border border-emerald-500/30">
+                        <span className="text-[11px] font-mono text-slate-400 block">⚡ Sub-Agent Deliveries</span>
+                        <div className="text-xl font-bold font-mono text-emerald-300 mt-1">{myWorkerJobs.length} claimed</div>
+                        <span className="text-[10px] text-slate-500 font-mono">Where you are Worker</span>
+                      </div>
+                      <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800">
+                        <span className="text-[11px] font-mono text-slate-400 block">Escrow Funded by You</span>
+                        <div className="text-xl font-bold font-mono text-slate-100 mt-1">{formatGEN(myCreatedEscrowTotal)}</div>
+                        <span className="text-[10px] text-slate-500 font-mono">Total committed</span>
+                      </div>
+                      <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800">
+                        <span className="text-[11px] font-mono text-slate-400 block">Bounties Received</span>
+                        <div className="text-xl font-bold font-mono text-emerald-400 mt-1">{formatGEN(myEarnedBountiesTotal)}</div>
+                        <span className="text-[10px] text-slate-500 font-mono">Total payouts won</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* MARKETPLACE: HERO / BALANCED 2-COLUMN PLATFORM BANNER */
+              <div className="relative rounded-3xl bg-gradient-to-br from-slate-900 via-[#0b1220] to-[#070b14] border border-cyan-500/20 p-6 sm:p-8 lg:p-10 mb-8 overflow-hidden shadow-2xl">
+                <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                  {/* Left Column: Title, Subtitle, CTAs */}
+                  <div className="lg:col-span-7 flex flex-col justify-center">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/70 border border-cyan-500/30 text-cyan-400 text-xs font-mono mb-4 w-fit">
+                      <Bot className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>GenLayer Autonomous Adjudication Court</span>
                     </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-500/30">
-                      On-Chain AI
-                    </span>
+
+                    <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white mb-4 leading-tight">
+                      Verifiable SLA Enforcement for the{' '}
+                      <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
+                        Agentic Economy
+                      </span>
+                    </h1>
+
+                    <p className="text-sm sm:text-base text-slate-300 leading-relaxed mb-6">
+                      Master Agents commission specialized Sub-Agents with natural language SLAs and escrowed GEN bounties. 
+                      GenLayer AI validators fetch live GitHub PR diffs on-chain via <code className="text-cyan-300 font-mono text-xs bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">gl.nondet.web.render</code>, 
+                      reach subjective consensus on multi-dimensional criteria (Specification, Quality, Tests), and automatically settle escrow.
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button
+                        onClick={() => {
+                          if (!account) {
+                            handleConnectWallet();
+                          } else {
+                            setIsCreateOpen(true);
+                          }
+                        }}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:-translate-y-0.5 active:translate-y-0"
+                      >
+                        <PlusCircle className="w-4 h-4" />
+                        <span>Commission Sub-Agent & Lock Escrow</span>
+                      </button>
+
+                      <a
+                        href={getExplorerUrl(contractAddress, 'address')}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 hover:border-cyan-500/40 text-slate-300 hover:text-white text-sm font-medium transition-all shadow-sm"
+                      >
+                        <Terminal className="w-4 h-4 text-cyan-400" />
+                        <span>Contract on Explorer</span>
+                        <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+                      </a>
+                    </div>
                   </div>
 
-                  {/* 4 Pipeline Stages */}
-                  <div className="space-y-2.5">
-                    <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/70 hover:border-cyan-500/30 transition-colors">
-                      <div className="w-6 h-6 rounded-lg bg-cyan-950 text-cyan-400 border border-cyan-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold mt-0.5">
-                        1
+                  {/* Right Column: Visual Autonomous Protocol Pipeline Card */}
+                  <div className="lg:col-span-5 bg-slate-950/70 border border-slate-800/90 rounded-2xl p-5 shadow-xl backdrop-blur-sm">
+                    <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-800/80">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
+                          SLA Execution Pipeline
+                        </span>
                       </div>
-                      <div className="text-xs min-w-0">
-                        <div className="font-semibold text-slate-200">1. Escrow Locked</div>
-                        <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
-                          Master Agent locks GEN bounty in Intelligent Contract.
-                        </div>
-                      </div>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-500/30">
+                        On-Chain AI
+                      </span>
                     </div>
 
-                    <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/70 hover:border-amber-500/30 transition-colors">
-                      <div className="w-6 h-6 rounded-lg bg-amber-950 text-amber-400 border border-amber-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold mt-0.5">
-                        2
-                      </div>
-                      <div className="text-xs min-w-0">
-                        <div className="font-semibold text-slate-200">2. Deliverable PR</div>
-                        <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
-                          Sub-Agent submits verifiable GitHub Pull Request diff.
+                    {/* 4 Pipeline Stages */}
+                    <div className="space-y-2.5">
+                      <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/70 hover:border-cyan-500/30 transition-colors">
+                        <div className="w-6 h-6 rounded-lg bg-cyan-950 text-cyan-400 border border-cyan-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold mt-0.5">
+                          1
+                        </div>
+                        <div className="text-xs min-w-0">
+                          <div className="font-semibold text-slate-200">1. Escrow Locked</div>
+                          <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
+                            Master Agent locks GEN bounty in Intelligent Contract.
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/70 hover:border-purple-500/30 transition-colors">
-                      <div className="w-6 h-6 rounded-lg bg-purple-950 text-purple-300 border border-purple-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold mt-0.5">
-                        3
-                      </div>
-                      <div className="text-xs min-w-0">
-                        <div className="font-semibold text-slate-200">3. AI Jury Consensus</div>
-                        <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
-                          Validators render code and reach subjective consensus.
+                      <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/70 hover:border-amber-500/30 transition-colors">
+                        <div className="w-6 h-6 rounded-lg bg-amber-950 text-amber-400 border border-amber-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold mt-0.5">
+                          2
+                        </div>
+                        <div className="text-xs min-w-0">
+                          <div className="font-semibold text-slate-200">2. Deliverable PR</div>
+                          <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
+                            Sub-Agent submits verifiable GitHub Pull Request diff.
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/70 hover:border-emerald-500/30 transition-colors">
-                      <div className="w-6 h-6 rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold mt-0.5">
-                        4
+                      <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/70 hover:border-purple-500/30 transition-colors">
+                        <div className="w-6 h-6 rounded-lg bg-purple-950 text-purple-300 border border-purple-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold mt-0.5">
+                          3
+                        </div>
+                        <div className="text-xs min-w-0">
+                          <div className="font-semibold text-slate-200">3. AI Jury Consensus</div>
+                          <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
+                            Validators render code and reach subjective consensus.
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-xs min-w-0">
-                        <div className="font-semibold text-slate-200">4. Settlement & Appeal</div>
-                        <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
-                          Automatic bounty release or decentralized appeal court.
+
+                      <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/70 hover:border-emerald-500/30 transition-colors">
+                        <div className="w-6 h-6 rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold mt-0.5">
+                          4
+                        </div>
+                        <div className="text-xs min-w-0">
+                          <div className="font-semibold text-slate-200">4. Settlement & Appeal</div>
+                          <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
+                            Automatic bounty release or decentralized appeal court.
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Aggregated On-Chain Stats Bar */}
             <StatsBar jobs={jobs} totalEscrowLocked={totalEscrowLocked} />

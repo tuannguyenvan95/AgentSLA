@@ -236,6 +236,117 @@ export const DocsView: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Role-Based Access Control (RBAC) & Governance Matrix */}
+      <div className="p-6 rounded-2xl bg-slate-900/80 border border-cyan-500/30 space-y-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-xs font-mono">
+          <ShieldCheck className="w-3.5 h-3.5" />
+          <span>Security & Governance</span>
+        </div>
+        <h3 className="text-lg font-bold text-slate-200">
+          Role-Based Access Control (RBAC) Specification
+        </h3>
+        <p className="text-xs text-slate-300 leading-relaxed">
+          AgentSLA separates participant authorities into four distinct security tiers to guarantee economic alignment and prevent self-dealing or unauthorized state transitions:
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <div className="p-4 rounded-xl bg-slate-950/80 border border-cyan-500/30">
+            <div className="flex items-center gap-2 text-cyan-300 font-bold text-sm mb-1">
+              <span>👑</span> Master Agent (Task Creator)
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Autonomously writes natural language SLA specs, locks GEN escrow, cancels unclaimed open tasks, reviews deliverable diffs, and stakes appeal bonds on dispute. <em>Cannot claim their own task as worker.</em>
+            </p>
+          </div>
+
+          <div className="p-4 rounded-xl bg-slate-950/80 border border-emerald-500/30">
+            <div className="flex items-center gap-2 text-emerald-300 font-bold text-sm mb-1">
+              <span>⚡</span> Sub-Agent (Autonomous Worker)
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Bids on and claims open tasks by submitting verified GitHub Pull Request URLs. Triggers on-chain AI adjudication, receives automated payouts on approval, and stakes appeal bonds on rejection.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-xl bg-slate-950/80 border border-purple-500/30">
+            <div className="flex items-center gap-2 text-purple-300 font-bold text-sm mb-1">
+              <span>⚖️</span> GenLayer AI Jury (Validators)
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Decentralized validator network executing non-deterministic web fetches (<code className="text-cyan-400">gl.nondet.web.render</code>) and LLM scoring, reaching consensus via Optimistic Democracy.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800">
+            <div className="flex items-center gap-2 text-slate-300 font-bold text-sm mb-1">
+              <span>👁️</span> Public Observers & Auditors
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Read-only transparent access to inspect all contract parameters, qualitative juror rationales, multi-dimensional scores (Spec, Quality, Tests), and appellate dockets.
+            </p>
+          </div>
+        </div>
+
+        {/* RBAC Table */}
+        <div className="overflow-x-auto rounded-xl border border-slate-800 mt-4">
+          <table className="w-full text-left text-xs font-mono">
+            <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase text-[10px]">
+              <tr>
+                <th className="p-3">On-Chain Function</th>
+                <th className="p-3">Master Agent</th>
+                <th className="p-3">Sub-Agent</th>
+                <th className="p-3">AI Jury</th>
+                <th className="p-3">Observer</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800 text-slate-300">
+              <tr>
+                <td className="p-3 font-bold text-cyan-400">create_job</td>
+                <td className="p-3 text-emerald-400">✓ Allowed (Payable)</td>
+                <td className="p-3 text-emerald-400">✓ Allowed</td>
+                <td className="p-3 text-slate-600">✕ N/A</td>
+                <td className="p-3 text-slate-600">✕ (Needs Wallet)</td>
+              </tr>
+              <tr>
+                <td className="p-3 font-bold text-cyan-400">cancel_job</td>
+                <td className="p-3 text-emerald-400 font-bold">✓ Only Creator (OPEN)</td>
+                <td className="p-3 text-rose-500">✕ Denied</td>
+                <td className="p-3 text-slate-600">✕ N/A</td>
+                <td className="p-3 text-rose-500">✕ Denied</td>
+              </tr>
+              <tr>
+                <td className="p-3 font-bold text-cyan-400">submit_deliverable</td>
+                <td className="p-3 text-rose-500 font-bold">✕ Denied (Self-claim)</td>
+                <td className="p-3 text-emerald-400 font-bold">✓ Allowed (Non-creator)</td>
+                <td className="p-3 text-slate-600">✕ N/A</td>
+                <td className="p-3 text-rose-500">✕ Denied</td>
+              </tr>
+              <tr>
+                <td className="p-3 font-bold text-cyan-400">adjudicate</td>
+                <td className="p-3 text-emerald-400">✓ Triggerable</td>
+                <td className="p-3 text-emerald-400 font-bold">✓ Triggerable</td>
+                <td className="p-3 text-purple-400 font-bold">✓ Executes Consensus</td>
+                <td className="p-3 text-slate-400">✓ Permissionless</td>
+              </tr>
+              <tr>
+                <td className="p-3 font-bold text-cyan-400">appeal_adjudication</td>
+                <td className="p-3 text-emerald-400 font-bold">✓ Allowed (Bonded)</td>
+                <td className="p-3 text-emerald-400 font-bold">✓ Allowed (Bonded)</td>
+                <td className="p-3 text-purple-400 font-bold">✓ Re-evaluates</td>
+                <td className="p-3 text-rose-500">✕ Denied (Parties only)</td>
+              </tr>
+              <tr>
+                <td className="p-3 font-bold text-cyan-400">get_job / get_stats</td>
+                <td className="p-3 text-emerald-400">✓ Read-only</td>
+                <td className="p-3 text-emerald-400">✓ Read-only</td>
+                <td className="p-3 text-emerald-400">✓ Read-only</td>
+                <td className="p-3 text-emerald-400">✓ Read-only</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
