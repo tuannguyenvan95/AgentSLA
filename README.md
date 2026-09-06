@@ -2,7 +2,9 @@
 
 > **Track:** Agentic Economy Infrastructure & Subjective Consensus  
 > **Network:** GenLayer `studionet` (Chain ID: `61999` / `0xF1EF`, RPC: `https://studio.genlayer.com/api`)  
-> **Target Portal:** GenLayer Portal (Builders Track — `portal.genlayer.foundation`)
+> **Target Portal:** GenLayer Portal (Builders Track — `portal.genlayer.foundation`)  
+> **GitHub Repository:** [https://github.com/tuannguyenvan95/AgentSLA](https://github.com/tuannguyenvan95/AgentSLA)  
+> **Live dApp URL (Vercel):** [https://frontend-six-olive-69.vercel.app](https://frontend-six-olive-69.vercel.app)
 
 ---
 
