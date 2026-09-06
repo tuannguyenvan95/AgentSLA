@@ -99,7 +99,7 @@ export const ContractConfigModal: React.FC<ContractConfigModalProps> = ({
               ) : (
                 <span className="flex items-center gap-1.5 text-amber-400 font-mono font-semibold">
                   <AlertCircle className="w-3.5 h-3.5" />
-                  Chưa kết nối (Đang dùng Demo Mode)
+                  Chưa liên kết Contract On-Chain
                 </span>
               )}
             </div>

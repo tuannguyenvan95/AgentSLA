@@ -10,9 +10,7 @@ import {
   Terminal, 
   Loader2,
   ExternalLink,
-  Bot,
-  Sparkles,
-  FileCode2
+  Bot
 } from 'lucide-react';
 import { 
   DEFAULT_CONTRACT_ADDRESS,
@@ -22,7 +20,7 @@ import {
   switchToStudionet,
   getEthereumProvider
 } from './config/genlayer';
-import { Job, toWeiGEN, getExplorerUrl, SAMPLE_JOBS } from './utils/helpers';
+import { Job, toWeiGEN, getExplorerUrl } from './utils/helpers';
 import { Navbar, NavTab } from './components/Navbar';
 import { StatsBar } from './components/StatsBar';
 import { JobCard } from './components/JobCard';
@@ -44,9 +42,9 @@ export const App: React.FC = () => {
   const [contractAddress, setContractAddressState] = useState<string>(getContractAddress());
   const [isContractConfigOpen, setIsContractConfigOpen] = useState<boolean>(false);
 
-  // Initialize with SAMPLE_JOBS so the user has immediate rich data to explore
-  const [jobs, setJobs] = useState<Job[]>(SAMPLE_JOBS);
-  const [totalEscrowLocked, setTotalEscrowLocked] = useState<string>('60000000000000000000'); // 60 GEN
+  // 100% Real On-Chain State (No mock / demo data)
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [totalEscrowLocked, setTotalEscrowLocked] = useState<string>('0');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isTxPending, setIsTxPending] = useState<boolean>(false);
   const [adjudicatingJobId, setAdjudicatingJobId] = useState<string | null>(null);
@@ -182,6 +180,8 @@ export const App: React.FC = () => {
     const c = customClient || client;
     const addr = targetContract || contractAddress;
     if (!c || !addr || addr === DEFAULT_CONTRACT_ADDRESS) {
+      setJobs([]);
+      setTotalEscrowLocked('0');
       return;
     }
 
@@ -237,9 +237,7 @@ export const App: React.FC = () => {
 
       const results = await Promise.all(jobPromises);
       const validJobs = results.filter((j): j is Job => j !== null);
-      if (validJobs.length > 0) {
-        setJobs(validJobs);
-      }
+      setJobs(validJobs);
     } catch (err: any) {
       console.error('Failed to fetch on-chain jobs:', err);
     } finally {
@@ -549,37 +547,6 @@ export const App: React.FC = () => {
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Demo Mode / Contract Not Connected Banner */}
-        {contractAddress === DEFAULT_CONTRACT_ADDRESS && (
-          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-950/50 via-slate-900 to-amber-950/30 border border-amber-500/40 text-amber-200 text-xs sm:text-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl animate-in fade-in">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <div className="space-y-1">
-                <div className="font-bold text-amber-300 flex items-center gap-2">
-                  <span>Chế độ Demo (Dữ liệu mô phỏng SLA)</span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-400/20 text-amber-300 border border-amber-400/30 font-mono">
-                    DEMO MODE
-                  </span>
-                </div>
-                <p className="text-slate-300 text-xs leading-relaxed">
-                  Bạn đang xem dữ liệu mô phỏng. Để thực hiện tạo Job, nộp PR, và chạy phán xử AI Consensus thật trên mạng <strong>GenLayer Studionet (61999)</strong>, hãy deploy contract <code className="text-cyan-300 font-mono">contracts/contract.py</code> trên GenLayer Studio rồi bấm nút kết nối bên cạnh.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0 w-full md:w-auto">
-              <button
-                onClick={() => setIsContractConfigOpen(true)}
-                className="w-full md:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs transition-all shadow-md flex items-center justify-center gap-1.5"
-              >
-                <FileCode2 className="w-4 h-4" />
-                <span>Kết nối Contract đã deploy</span>
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Alerts / Feedback */}
         {errorMsg && (
           <div className="mb-6 p-4 rounded-xl bg-rose-950/70 border border-rose-500/50 text-rose-300 text-sm flex items-center justify-between shadow-lg shadow-rose-950/50 animate-in fade-in">
