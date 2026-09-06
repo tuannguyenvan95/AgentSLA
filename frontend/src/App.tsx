@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { createClient } from 'genlayer-js';
 import { studionet } from 'genlayer-js/chains';
 import { 
@@ -10,7 +10,8 @@ import {
   Terminal, 
   Loader2,
   ExternalLink,
-  Bot
+  Bot,
+  Wallet
 } from 'lucide-react';
 import { 
   getContractAddress,
@@ -33,10 +34,21 @@ export const App: React.FC = () => {
   const [account, setAccount] = useState<string | null>(null);
   const [balance, setBalance] = useState<string>('0');
   const [isCorrectNetwork, setIsCorrectNetwork] = useState<boolean>(false);
-  const [client, setClient] = useState<any>(null);
+  const [isConnecting, setIsConnecting] = useState<boolean>(false);
+  const [showWalletPromptModal, setShowWalletPromptModal] = useState<boolean>(false);
 
   // Official Contract Address
   const [contractAddress] = useState<string>(getContractAddress());
+
+  // Memoized GenLayer client for reading & writing
+  const client = useMemo(() => {
+    const eth = getEthereumProvider();
+    return createClient({
+      chain: studionet,
+      provider: eth || undefined,
+      account: account as `0x${string}` | undefined,
+    });
+  }, [account]);
 
   // 100% Real On-Chain State (No mock / demo data)
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -77,33 +89,22 @@ export const App: React.FC = () => {
   }, []);
 
   // Fetch balance
-  const fetchBalance = useCallback(async (userAddr: string) => {
+  const fetchBalance = useCallback(async (userAddr?: string) => {
     const eth = getEthereumProvider();
-    if (!eth || !userAddr) return;
+    const target = userAddr || account;
+    if (!eth || !target) return;
     try {
       const balHex = await eth.request({
         method: 'eth_getBalance',
-        params: [userAddr, 'latest'],
+        params: [target, 'latest'],
       });
       setBalance(BigInt(balHex).toString());
     } catch (err) {
       console.error('Failed to fetch balance:', err);
     }
-  }, []);
+  }, [account]);
 
-  // Initialize client and connect
-  const initClient = useCallback((userAddress?: string) => {
-    const eth = getEthereumProvider();
-    const c = createClient({
-      chain: studionet,
-      provider: eth || undefined,
-      account: userAddress as `0x${string}` | undefined,
-    });
-    setClient(c);
-    return c;
-  }, []);
-
-  // Connect wallet: 1. Request accounts FIRST, 2. Check/switch chain SECOND
+  // Connect wallet: Interactive request triggered by user click
   const handleConnectWallet = async () => {
     const eth = getEthereumProvider();
     if (!eth) {
@@ -111,13 +112,15 @@ export const App: React.FC = () => {
       return;
     }
 
+    setIsConnecting(true);
     setErrorMsg(null);
+    setShowWalletPromptModal(true);
+
     try {
-      // Step 1: Prompt account authorization
-      const accounts = await eth.request({ method: 'eth_requestAccounts' });
+      // Step 1: Prompt account authorization on extension
+      const accounts: string[] = await eth.request({ method: 'eth_requestAccounts' });
       if (!accounts || accounts.length === 0) {
-        setErrorMsg('Không tìm thấy tài khoản nào được kết nối.');
-        return;
+        throw new Error('Không có tài khoản nào được kết nối.');
       }
 
       const primary = accounts[0];
@@ -126,11 +129,13 @@ export const App: React.FC = () => {
         localStorage.setItem('agentsla_wallet_connected', 'true');
       } catch {}
 
-      const userClient = initClient(primary);
-      await fetchBalance(primary);
+      setShowWalletPromptModal(false);
       setSuccessMsg(`Kết nối ví thành công: ${primary.slice(0, 6)}...${primary.slice(-4)}`);
 
-      // Step 2: Check & prompt chain switch without failing authorization
+      // Step 2: Fetch balance
+      await fetchBalance(primary);
+
+      // Step 3: Check and switch chain to Studionet
       try {
         const chainIdHex = await eth.request({ method: 'eth_chainId' });
         const isMatch = chainIdHex?.toLowerCase() === STUDIONET_CONFIG.chainIdHex.toLowerCase();
@@ -147,17 +152,18 @@ export const App: React.FC = () => {
       } catch (netErr: any) {
         console.warn('Network switch issue:', netErr);
       }
-
-      fetchOnChainData(userClient);
     } catch (err: any) {
       console.error('Wallet connection rejected:', err);
+      setShowWalletPromptModal(false);
       if (err.code === 4001) {
         setErrorMsg('Bạn đã hủy yêu cầu kết nối ví trên extension.');
       } else if (err.code === -32002) {
-        setErrorMsg('Đang có yêu cầu kết nối chờ xử lý! Vui lòng bấm vào biểu tượng extension MetaMask trên thanh công cụ trình duyệt của bạn.');
+        setErrorMsg('Đang có popup MetaMask chờ phê duyệt! Vui lòng bấm vào icon con cáo MetaMask trên thanh công cụ trình duyệt để mở khóa và duyệt.');
       } else {
         setErrorMsg(err?.message || 'Kết nối ví thất bại. Vui lòng thử lại.');
       }
+    } finally {
+      setIsConnecting(false);
     }
   };
 
@@ -168,15 +174,12 @@ export const App: React.FC = () => {
     } catch {}
     setAccount(null);
     setBalance('0');
-    initClient();
-    setSuccessMsg('Đã ngắt kết nối ví thành công.');
+    setSuccessMsg('Đã ngắt kết nối ví.');
   };
 
   // Fetch all jobs from the Intelligent Contract
-  const fetchOnChainData = useCallback(async (customClient?: any, targetContract?: string) => {
-    const c = customClient || client;
-    const addr = targetContract || contractAddress;
-    if (!c || !addr || addr === '0x0000000000000000000000000000000000000000') {
+  const fetchOnChainData = useCallback(async () => {
+    if (!contractAddress || contractAddress === '0x0000000000000000000000000000000000000000') {
       setJobs([]);
       setTotalEscrowLocked('0');
       return;
@@ -186,8 +189,8 @@ export const App: React.FC = () => {
     try {
       // 1. Fetch Stats
       try {
-        const statsRaw = await c.readContract({
-          address: addr,
+        const statsRaw = await client.readContract({
+          address: contractAddress as `0x${string}`,
           functionName: 'get_stats',
           args: [],
         });
@@ -200,8 +203,8 @@ export const App: React.FC = () => {
       }
 
       // 2. Fetch Job Count
-      const countRes = await c.readContract({
-        address: addr,
+      const countRes = await client.readContract({
+        address: contractAddress as `0x${string}`,
         functionName: 'get_job_count',
         args: [],
       });
@@ -213,13 +216,13 @@ export const App: React.FC = () => {
         jobPromises.push(
           (async () => {
             try {
-              const jobId = await c.readContract({
-                address: addr,
+              const jobId = await client.readContract({
+                address: contractAddress as `0x${string}`,
                 functionName: 'get_job_id_by_index',
                 args: [i],
               });
-              const rawJob = await c.readContract({
-                address: addr,
+              const rawJob = await client.readContract({
+                address: contractAddress as `0x${string}`,
                 functionName: 'get_job',
                 args: [jobId],
               });
@@ -242,35 +245,20 @@ export const App: React.FC = () => {
     }
   }, [client, contractAddress]);
 
-  // Initial mount
+  // Initial mount: Check silent authorization and register listeners once
   useEffect(() => {
     const eth = getEthereumProvider();
-    const initialClient = initClient();
-
-    let wasConnected = false;
-    try {
-      wasConnected = localStorage.getItem('agentsla_wallet_connected') === 'true';
-    } catch {}
-
     if (eth) {
       checkNetwork();
 
-      const methodToCall = wasConnected ? 'eth_requestAccounts' : 'eth_accounts';
-
-      eth.request({ method: methodToCall }).then((accounts: string[]) => {
+      // Silent authorization check only - NEVER prompt popup on initial load
+      eth.request({ method: 'eth_accounts' }).then((accounts: string[]) => {
         if (accounts && accounts.length > 0) {
           setAccount(accounts[0]);
-          try {
-            localStorage.setItem('agentsla_wallet_connected', 'true');
-          } catch {}
-          const userClient = initClient(accounts[0]);
           fetchBalance(accounts[0]);
-          fetchOnChainData(userClient);
-        } else {
-          fetchOnChainData(initialClient);
         }
-      }).catch(() => {
-        fetchOnChainData(initialClient);
+      }).catch((err: any) => {
+        console.warn('Silent eth_accounts error:', err);
       });
 
       const handleAccountsChanged = (accounts: string[]) => {
@@ -279,9 +267,7 @@ export const App: React.FC = () => {
           try {
             localStorage.setItem('agentsla_wallet_connected', 'true');
           } catch {}
-          const uc = initClient(accounts[0]);
           fetchBalance(accounts[0]);
-          fetchOnChainData(uc);
         } else {
           try {
             localStorage.removeItem('agentsla_wallet_connected');
@@ -292,7 +278,6 @@ export const App: React.FC = () => {
       };
 
       const handleChainChanged = (newChainId: string) => {
-        checkNetwork();
         const isMatch = typeof newChainId === 'string' && newChainId.toLowerCase() === STUDIONET_CONFIG.chainIdHex.toLowerCase();
         setIsCorrectNetwork(isMatch);
         if (account) {
@@ -307,10 +292,13 @@ export const App: React.FC = () => {
         eth.removeListener?.('accountsChanged', handleAccountsChanged);
         eth.removeListener?.('chainChanged', handleChainChanged);
       };
-    } else {
-      fetchOnChainData(initialClient);
     }
-  }, [initClient, checkNetwork, fetchBalance, fetchOnChainData, account]);
+  }, []);
+
+  // Fetch on-chain data on load and when dependencies change
+  useEffect(() => {
+    fetchOnChainData();
+  }, [fetchOnChainData]);
 
   // Auto-refresh interval
   useEffect(() => {
@@ -340,7 +328,7 @@ export const App: React.FC = () => {
     try {
       const weiAmount = toWeiGEN(bountyGen);
       const hash = await client.writeContract({
-        address: contractAddress,
+        address: contractAddress as `0x${string}`,
         functionName: 'create_job',
         args: [slaSpec, repoUrl, category],
         value: weiAmount,
@@ -350,10 +338,11 @@ export const App: React.FC = () => {
 
       const receipt = await client.waitForTransactionReceipt({
         hash,
-        timeout: 180_000,
+        interval: 2000,
+        retries: 120,
       });
 
-      if (receipt.status === 'reverted' || receipt.status === 0 || String(receipt.status) === '0x0') {
+      if (receipt && (receipt.status === 0 || String(receipt.status) === '0x0')) {
         throw new Error('Giao dịch bị revert on-chain. Hãy kiểm tra bạn có đủ số dư GEN.');
       }
 
@@ -378,16 +367,18 @@ export const App: React.FC = () => {
     setErrorMsg(null);
     try {
       const hash = await client.writeContract({
-        address: contractAddress,
+        address: contractAddress as `0x${string}`,
         functionName: 'submit_deliverable',
         args: [jobId, prUrl],
+        value: BigInt(0),
       });
       setLatestTxHash(hash);
       setSuccessMsg('Đang gửi PR nghiệm thu lên contract...');
 
       await client.waitForTransactionReceipt({
         hash,
-        timeout: 180_000,
+        interval: 2000,
+        retries: 120,
       });
 
       setSuccessMsg(`Đã nộp PR nghiệm thu! Sẵn sàng cho AI Consensus phán xử.`);
@@ -412,19 +403,21 @@ export const App: React.FC = () => {
     setErrorMsg(null);
     try {
       const hash = await client.writeContract({
-        address: contractAddress,
+        address: contractAddress as `0x${string}`,
         functionName: 'adjudicate',
         args: [jobId],
+        value: BigInt(0),
       });
       setLatestTxHash(hash);
       setSuccessMsg('Đang chạy đồng thuận: Các validator AI đang render GitHub PR trực tiếp on-chain...');
 
       const receipt = await client.waitForTransactionReceipt({
         hash,
-        timeout: 240_000,
+        interval: 2000,
+        retries: 180,
       });
 
-      if (receipt.status === 'reverted' || receipt.status === 0 || String(receipt.status) === '0x0') {
+      if (receipt && (receipt.status === 0 || String(receipt.status) === '0x0')) {
         throw new Error('Phán xử thất bại hoặc bị revert trên GenLayer.');
       }
 
@@ -452,7 +445,7 @@ export const App: React.FC = () => {
     try {
       const bondWei = toWeiGEN(bondGen);
       const hash = await client.writeContract({
-        address: contractAddress,
+        address: contractAddress as `0x${string}`,
         functionName: 'appeal_adjudication',
         args: [jobId],
         value: bondWei,
@@ -462,7 +455,8 @@ export const App: React.FC = () => {
 
       await client.waitForTransactionReceipt({
         hash,
-        timeout: 180_000,
+        interval: 2000,
+        retries: 120,
       });
 
       setSuccessMsg(`Đã nộp đơn kháng cáo thành công! Vụ việc đã được chuyển lên Hội đồng Phúc thẩm AI.`);
@@ -486,12 +480,13 @@ export const App: React.FC = () => {
     setErrorMsg(null);
     try {
       const hash = await client.writeContract({
-        address: contractAddress,
+        address: contractAddress as `0x${string}`,
         functionName: 'cancel_job',
         args: [jobId],
+        value: BigInt(0),
       });
       setLatestTxHash(hash);
-      await client.waitForTransactionReceipt({ hash, timeout: 180_000 });
+      await client.waitForTransactionReceipt({ hash, interval: 2000, retries: 120 });
       setSuccessMsg(`Job ${jobId} đã hủy. Tiền Escrow đã được hoàn lại.`);
       await fetchOnChainData();
       await fetchBalance(account);
@@ -555,6 +550,7 @@ export const App: React.FC = () => {
         openCount={openCount}
         appealCount={appealCount}
         contractAddress={contractAddress}
+        isConnecting={isConnecting}
       />
 
       {/* Main Container */}
@@ -880,6 +876,33 @@ export const App: React.FC = () => {
         currentAccount={account}
         isAppealing={isTxPending}
       />
+
+      {/* Interactive Wallet Guidance Prompt */}
+      {showWalletPromptModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-[#0b1220] border border-cyan-500/50 rounded-2xl max-w-md w-full p-6 shadow-2xl relative text-center">
+            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-cyan-950/80 border border-cyan-500/50 flex items-center justify-center text-cyan-400 shadow-lg shadow-cyan-500/20">
+              <Wallet className="w-7 h-7 animate-pulse text-cyan-400" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">Đang mở kết nối MetaMask...</h3>
+            <p className="text-sm text-slate-300 leading-relaxed mb-4">
+              Vui lòng mở tiện ích <strong>MetaMask (icon con cáo)</strong> trên thanh công cụ trình duyệt để nhập mật khẩu hoặc nhấn <strong>Next / Connect</strong>.
+            </p>
+            <div className="p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/20 text-xs text-cyan-300 mb-5 text-left">
+              💡 <strong>Lưu ý:</strong> Cửa sổ popup MetaMask có thể bị trình duyệt ẩn ở góc trên bên phải thanh Extension. Hãy nhấp trực tiếp vào biểu tượng con cáo để phê duyệt.
+            </div>
+            <button
+              onClick={() => {
+                setShowWalletPromptModal(false);
+                setIsConnecting(false);
+              }}
+              className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+            >
+              Đóng thông báo
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

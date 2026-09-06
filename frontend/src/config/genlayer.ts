@@ -48,8 +48,12 @@ export function getEthereumProvider() {
 
   // 1. If window.ethereum.providers exists (e.g. MetaMask + Coinbase + Phantom)
   if (win.ethereum?.providers && Array.isArray(win.ethereum.providers) && win.ethereum.providers.length > 0) {
-    const mm = win.ethereum.providers.find((p: any) => p.isMetaMask);
-    if (mm) return mm;
+    const realMetaMask = win.ethereum.providers.find(
+      (p: any) => p.isMetaMask && !p.isPhantom && !p.isBraveWallet && !p.isRabby
+    );
+    if (realMetaMask) return realMetaMask;
+    const anyMM = win.ethereum.providers.find((p: any) => p.isMetaMask);
+    if (anyMM) return anyMM;
     return win.ethereum.providers[0];
   }
 

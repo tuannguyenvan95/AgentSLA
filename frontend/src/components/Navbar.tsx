@@ -15,7 +15,8 @@ import {
   Scale,
   BarChart3,
   BookOpen,
-  FileCode2
+  FileCode2,
+  Loader2
 } from 'lucide-react';
 import { 
   switchToStudionet,
@@ -37,6 +38,7 @@ interface NavbarProps {
   openCount: number;
   appealCount: number;
   contractAddress?: string;
+  isConnecting?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -51,6 +53,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   openCount,
   appealCount,
   contractAddress,
+  isConnecting,
 }) => {
   const [isZeroBalance, setIsZeroBalance] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -344,11 +347,21 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             ) : (
               <button
+                disabled={isConnecting}
                 onClick={onConnect}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-lg shadow-cyan-500/20"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-80 disabled:cursor-wait cursor-pointer"
               >
-                <Wallet className="w-4 h-4" />
-                <span>Connect Wallet</span>
+                {isConnecting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+                    <span>Connecting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Wallet className="w-4 h-4" />
+                    <span>Connect Wallet</span>
+                  </>
+                )}
               </button>
             )}
           </div>
