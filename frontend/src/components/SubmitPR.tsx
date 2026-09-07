@@ -76,9 +76,10 @@ export const SubmitPR: React.FC<SubmitPRProps> = ({
             <input
               type="text"
               value={prUrl}
+              disabled={isLoading}
               onChange={(e) => setPrUrl(e.target.value)}
               placeholder="https://github.com/organization/repository/pull/42"
-              className="w-full px-3.5 py-2.5 rounded-lg bg-slate-950 border border-slate-700 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm text-slate-100 font-mono placeholder:text-slate-600 outline-none"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-slate-950 border border-slate-700 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm text-slate-100 font-mono placeholder:text-slate-600 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               required
             />
             <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
@@ -100,19 +101,23 @@ export const SubmitPR: React.FC<SubmitPRProps> = ({
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
+              className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50"
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-xs transition-all shadow-lg ${
+                isLoading
+                  ? 'bg-cyan-950/80 border border-cyan-500/50 text-cyan-300 cursor-not-allowed shadow-none'
+                  : 'bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 shadow-cyan-500/20 active:translate-y-0.5 cursor-pointer'
+              }`}
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Submitting Deliverable...</span>
+                  <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+                  <span>Submitting Deliverable & Claiming...</span>
                 </>
               ) : (
                 <>

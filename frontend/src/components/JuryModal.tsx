@@ -282,8 +282,9 @@ export const JuryModal: React.FC<JuryModalProps> = ({
                       step="0.01"
                       min="0.01"
                       value={appealBond}
+                      disabled={isAppealing}
                       onChange={(e) => setAppealBond(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-purple-500/40 text-xs font-mono text-white outline-none"
+                      className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-purple-500/40 text-xs font-mono text-white outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                       required
                     />
                   </div>
@@ -291,18 +292,23 @@ export const JuryModal: React.FC<JuryModalProps> = ({
                     <button
                       type="button"
                       onClick={() => setShowAppealForm(false)}
-                      className="px-3 py-1.5 text-xs text-slate-400 hover:text-white"
+                      disabled={isAppealing}
+                      className="px-3 py-1.5 text-xs text-slate-400 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={isAppealing}
-                      className="px-4 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 disabled:opacity-50"
+                      className={`px-4 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1.5 ${
+                        isAppealing
+                          ? 'bg-purple-950/80 border border-purple-500/50 text-purple-300 cursor-not-allowed shadow-none'
+                          : 'bg-purple-600 hover:bg-purple-500 text-white cursor-pointer shadow-md shadow-purple-500/20'
+                      }`}
                     >
                       {isAppealing ? (
                         <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400" />
                           <span>Filing on-chain appeal...</span>
                         </>
                       ) : (

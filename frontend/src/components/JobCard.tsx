@@ -20,6 +20,12 @@ import {
   getScoreGrade 
 } from '../utils/helpers';
 
+export interface PendingTxState {
+  jobId?: string;
+  action: 'create' | 'claim' | 'adjudicate' | 'cancel' | 'appeal';
+  statusText: string;
+}
+
 interface JobCardProps {
   job: Job;
   currentAccount: string | null;
@@ -28,6 +34,8 @@ interface JobCardProps {
   onCancelJob: (jobId: string) => Promise<void>;
   onInspectJury: (job: Job) => void;
   isAdjudicating: boolean;
+  isTxPending?: boolean;
+  pendingTx?: PendingTxState | null;
 }
 
 export const JobCard: React.FC<JobCardProps> = ({
@@ -38,6 +46,8 @@ export const JobCard: React.FC<JobCardProps> = ({
   onCancelJob,
   onInspectJury,
   isAdjudicating,
+  isTxPending = false,
+  pendingTx = null,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [adjudicationStep, setAdjudicationStep] = useState<string | null>(null);
@@ -55,7 +65,11 @@ export const JobCard: React.FC<JobCardProps> = ({
   const avgScore = Math.round((job.spec_score + job.quality_score + job.test_score) / 3);
   const grade = getScoreGrade(avgScore || (job.verdict === 'APPROVED' ? 88 : 35));
 
+  const isThisJobPending = pendingTx?.jobId === job.job_id;
+  const isAnyTxPending = Boolean(isTxPending);
+
   const handleTriggerAdjudicate = async () => {
+    if (isAdjudicating || isAnyTxPending) return;
     try {
       setAdjudicationStep('Step 1/3: Reading GitHub PR live on-chain (gl.nondet.web.render)...');
       setTimeout(() => {
@@ -229,24 +243,54 @@ export const JobCard: React.FC<JobCardProps> = ({
                   <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shrink-0" />
                   <span className="truncate">Waiting for Sub-Agent claim...</span>
                 </div>
-                <button
-                  onClick={() => onCancelJob(job.job_id)}
-                  title="Cancel job & reclaim escrowed bounty"
-                  className="py-2 px-3 rounded-xl bg-slate-800/90 hover:bg-rose-950/80 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-500/40 text-xs font-mono font-medium flex items-center gap-1.5 transition-colors shadow-sm"
-                >
-                  <Trash2 className="w-3.5 h-3.5 text-rose-400" />
-                  <span>Cancel Job</span>
-                </button>
+                {isThisJobPending && pendingTx?.action === 'cancel' ? (
+                  <button
+                    disabled
+                    className="py-2 px-3 rounded-xl bg-rose-950/80 border border-rose-500/60 text-rose-300 text-xs font-mono font-medium flex items-center gap-1.5 cursor-not-allowed shadow-sm"
+                  >
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-rose-400" />
+                    <span>{pendingTx.statusText || 'Cancelling...'}</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => onCancelJob(job.job_id)}
+                    disabled={isAnyTxPending}
+                    title="Cancel job & reclaim escrowed bounty"
+                    className={`py-2 px-3 rounded-xl border text-xs font-mono font-medium flex items-center gap-1.5 transition-colors shadow-sm ${
+                      isAnyTxPending
+                        ? 'bg-slate-900 border-slate-800 text-slate-600 opacity-50 cursor-not-allowed'
+                        : 'bg-slate-800/90 hover:bg-rose-950/80 text-slate-300 hover:text-rose-300 border-slate-700 hover:border-rose-500/40 cursor-pointer'
+                    }`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                    <span>Cancel Job</span>
+                  </button>
+                )}
               </div>
             ) : (
               /* Sub-Agent or visitor claims task */
-              <button
-                onClick={() => onSubmitPR(job)}
-                className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md shadow-cyan-500/20 active:translate-y-0.5"
-              >
-                <GitPullRequest className="w-3.5 h-3.5" />
-                <span>⚡ Claim Task & Submit Deliverable PR</span>
-              </button>
+              isThisJobPending && pendingTx?.action === 'claim' ? (
+                <button
+                  disabled
+                  className="w-full py-2.5 px-3 rounded-xl bg-cyan-950/90 border border-cyan-500/60 text-cyan-300 font-bold text-xs flex items-center justify-center gap-2 cursor-not-allowed shadow-md shadow-cyan-500/10"
+                >
+                  <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+                  <span>{pendingTx.statusText || 'Submitting PR & Claiming on-chain...'}</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => onSubmitPR(job)}
+                  disabled={isAnyTxPending}
+                  className={`w-full py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md ${
+                    isAnyTxPending
+                      ? 'bg-slate-800 text-slate-500 border border-slate-700 opacity-50 cursor-not-allowed shadow-none'
+                      : 'bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 shadow-cyan-500/20 active:translate-y-0.5 cursor-pointer'
+                  }`}
+                >
+                  <GitPullRequest className="w-3.5 h-3.5" />
+                  <span>⚡ Claim Task & Submit Deliverable PR</span>
+                </button>
+              )
             )}
           </div>
         )}
@@ -256,19 +300,33 @@ export const JobCard: React.FC<JobCardProps> = ({
           <div className="space-y-2">
             <button
               onClick={handleTriggerAdjudicate}
-              disabled={isAdjudicating}
-              className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-teal-500 to-emerald-500 hover:from-amber-400 hover:to-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md shadow-amber-500/20 disabled:opacity-50"
+              disabled={isAdjudicating || isAnyTxPending}
+              className={`w-full py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md ${
+                isAdjudicating
+                  ? 'bg-amber-950/90 border border-amber-500/60 text-amber-300 cursor-not-allowed shadow-amber-500/10'
+                  : isAnyTxPending
+                  ? 'bg-slate-800 text-slate-500 border border-slate-700 opacity-50 cursor-not-allowed shadow-none'
+                  : 'bg-gradient-to-r from-amber-500 via-teal-500 to-emerald-500 hover:from-amber-400 hover:to-emerald-400 text-slate-950 shadow-amber-500/20 active:translate-y-0.5 cursor-pointer'
+              }`}
             >
               {isAdjudicating ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Adjudicating On-chain (Optimistic Democracy)...</span>
+                  <Loader2 className="w-4 h-4 animate-spin text-amber-400 shrink-0" />
+                  <span className="truncate">
+                    {isThisJobPending && pendingTx?.statusText
+                      ? pendingTx.statusText
+                      : 'Adjudicating On-chain (Optimistic Democracy)...'}
+                  </span>
                 </>
               ) : (
                 <>
                   <Scale className="w-4 h-4" />
                   <span>
-                    {isWorker ? '⚡ Trigger AI Jury Adjudication' : isCreator ? '👑 Request AI Jury Evaluation' : '⚖️ Trigger Consensual Adjudication'}
+                    {isWorker
+                      ? '⚡ Trigger AI Jury Adjudication'
+                      : isCreator
+                      ? '👑 Request AI Jury Evaluation'
+                      : '⚖️ Trigger Consensual Adjudication'}
                   </span>
                 </>
               )}
@@ -298,14 +356,29 @@ export const JobCard: React.FC<JobCardProps> = ({
               )}
             </div>
 
-            <button
-              onClick={() => onInspectJury(job)}
-              className="py-1.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 text-xs font-mono font-semibold flex items-center gap-1.5 transition-colors border border-slate-700 shadow-sm"
-            >
-              <Scale className="w-3 h-3" />
-              <span>{isCreator || isWorker ? 'Verdict & Dispute' : 'Inspect Rationale'}</span>
-              <ExternalLink className="w-3 h-3 opacity-60" />
-            </button>
+            {isThisJobPending && pendingTx?.action === 'appeal' ? (
+              <button
+                disabled
+                className="py-1.5 px-3 rounded-xl bg-purple-950/80 border border-purple-500/60 text-purple-300 text-xs font-mono font-semibold flex items-center gap-1.5 cursor-not-allowed shadow-sm"
+              >
+                <Loader2 className="w-3 h-3 animate-spin text-purple-400" />
+                <span>{pendingTx.statusText || 'Escalating Appeal...'}</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => onInspectJury(job)}
+                disabled={isAnyTxPending}
+                className={`py-1.5 px-3 rounded-xl text-xs font-mono font-semibold flex items-center gap-1.5 transition-colors border shadow-sm ${
+                  isAnyTxPending
+                    ? 'bg-slate-900 border-slate-800 text-slate-600 opacity-50 cursor-not-allowed'
+                    : 'bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 border-slate-700 cursor-pointer'
+                }`}
+              >
+                <Scale className="w-3 h-3" />
+                <span>{isCreator || isWorker ? 'Verdict & Dispute' : 'Inspect Rationale'}</span>
+                <ExternalLink className="w-3 h-3 opacity-60" />
+              </button>
+            )}
           </div>
         )}
 
@@ -318,7 +391,12 @@ export const JobCard: React.FC<JobCardProps> = ({
             </div>
             <button
               onClick={() => onInspectJury(job)}
-              className="py-1.5 px-3 rounded-xl bg-purple-950/60 hover:bg-purple-900/60 text-purple-300 text-xs font-mono font-semibold flex items-center gap-1 transition-colors border border-purple-500/40 shadow-sm"
+              disabled={isAnyTxPending}
+              className={`py-1.5 px-3 rounded-xl text-xs font-mono font-semibold flex items-center gap-1 transition-colors border shadow-sm ${
+                isAnyTxPending
+                  ? 'bg-purple-950/20 border-purple-900/40 text-purple-500/50 opacity-50 cursor-not-allowed'
+                  : 'bg-purple-950/60 hover:bg-purple-900/60 text-purple-300 border-purple-500/40 cursor-pointer'
+              }`}
             >
               <span>Appellate Docket</span>
               <ExternalLink className="w-3 h-3" />

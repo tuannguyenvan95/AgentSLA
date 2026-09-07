@@ -24,7 +24,7 @@ import {
 import { Job, toWeiGEN, formatGEN, getExplorerUrl } from './utils/helpers';
 import { Navbar, NavTab } from './components/Navbar';
 import { StatsBar } from './components/StatsBar';
-import { JobCard } from './components/JobCard';
+import { JobCard, PendingTxState } from './components/JobCard';
 import { CreateJob } from './components/CreateJob';
 import { SubmitPR } from './components/SubmitPR';
 import { JuryModal } from './components/JuryModal';
@@ -72,6 +72,7 @@ export const App: React.FC = () => {
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isTxPending, setIsTxPending] = useState<boolean>(false);
+  const [pendingTx, setPendingTx] = useState<PendingTxState | null>(null);
   const [adjudicatingJobId, setAdjudicatingJobId] = useState<string | null>(null);
 
   // Navigation & Filtering
@@ -454,6 +455,7 @@ export const App: React.FC = () => {
     }
 
     setIsTxPending(true);
+    setPendingTx({ action: 'create', statusText: 'Awaiting MetaMask signature...' });
     setErrorMsg(null);
     try {
       const weiAmount = toWeiGEN(bountyGen);
@@ -464,6 +466,7 @@ export const App: React.FC = () => {
         value: weiAmount,
       });
       setLatestTxHash(hash);
+      setPendingTx({ action: 'create', statusText: 'Locking Escrow on Studionet...' });
       setSuccessMsg('Transaction broadcasted! Awaiting FINALIZED block on GenLayer Studionet...');
 
       // Close modal immediately once user confirms in MetaMask so they are never trapped in the modal
@@ -498,6 +501,7 @@ export const App: React.FC = () => {
       throw txErr;
     } finally {
       setIsTxPending(false);
+      setPendingTx(null);
     }
   };
 
@@ -511,6 +515,7 @@ export const App: React.FC = () => {
     }
 
     setIsTxPending(true);
+    setPendingTx({ jobId, action: 'claim', statusText: 'Awaiting MetaMask signature...' });
     setErrorMsg(null);
     try {
       const hash = await client.writeContract({
@@ -520,6 +525,7 @@ export const App: React.FC = () => {
         value: BigInt(0),
       });
       setLatestTxHash(hash);
+      setPendingTx({ jobId, action: 'claim', statusText: 'Submitting PR & Claiming on-chain...' });
       setSuccessMsg('Submitting PR deliverable to contract...');
 
       // Close deliverable modal immediately once confirmed in wallet
@@ -551,6 +557,7 @@ export const App: React.FC = () => {
       throw txErr;
     } finally {
       setIsTxPending(false);
+      setPendingTx(null);
     }
   };
 
@@ -566,6 +573,8 @@ export const App: React.FC = () => {
     }
 
     setAdjudicatingJobId(jobId);
+    setIsTxPending(true);
+    setPendingTx({ jobId, action: 'adjudicate', statusText: 'Awaiting MetaMask signature...' });
     setErrorMsg(null);
     try {
       const hash = await client.writeContract({
@@ -575,6 +584,7 @@ export const App: React.FC = () => {
         value: BigInt(0),
       });
       setLatestTxHash(hash);
+      setPendingTx({ jobId, action: 'adjudicate', statusText: 'AI Validator Consensus in progress...' });
       setSuccessMsg('Running AI consensus: Validator nodes are rendering GitHub PR directly on-chain...');
 
       const receipt = await client.waitForTransactionReceipt({
@@ -592,9 +602,15 @@ export const App: React.FC = () => {
       await fetchOnChainData();
       await fetchBalance(account);
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Adjudication failed on GenLayer.');
+      if (err?.code === 4001 || err?.message?.includes('User rejected')) {
+        setErrorMsg('Adjudication was cancelled in your wallet extension.');
+      } else {
+        setErrorMsg(err?.message || 'Adjudication failed on GenLayer.');
+      }
     } finally {
       setAdjudicatingJobId(null);
+      setIsTxPending(false);
+      setPendingTx(null);
     }
   };
 
@@ -608,6 +624,7 @@ export const App: React.FC = () => {
     }
 
     setIsTxPending(true);
+    setPendingTx({ jobId, action: 'appeal', statusText: 'Awaiting MetaMask signature...' });
     setErrorMsg(null);
     try {
       const bondWei = toWeiGEN(bondGen);
@@ -618,6 +635,7 @@ export const App: React.FC = () => {
         value: bondWei,
       });
       setLatestTxHash(hash);
+      setPendingTx({ jobId, action: 'appeal', statusText: 'Filing appeal on-chain...' });
       setSuccessMsg('Submitting appeal transaction on-chain...');
 
       const receipt = await client.waitForTransactionReceipt({
@@ -634,8 +652,14 @@ export const App: React.FC = () => {
       setSuccessMsg('Appeal filed successfully! Case escalated to AI Appellate Council.');
       await fetchOnChainData();
       await fetchBalance(account);
+    } catch (err: any) {
+      if (err?.code === 4001 || err?.message?.includes('User rejected')) {
+        throw new Error('Appeal was cancelled in your wallet extension.');
+      }
+      throw err;
     } finally {
       setIsTxPending(false);
+      setPendingTx(null);
     }
   };
 
@@ -649,6 +673,7 @@ export const App: React.FC = () => {
     if (!confirm(`Cancel job ${jobId} and refund escrowed funds to your wallet?`)) return;
 
     setIsTxPending(true);
+    setPendingTx({ jobId, action: 'cancel', statusText: 'Awaiting MetaMask signature...' });
     setErrorMsg(null);
     try {
       const hash = await client.writeContract({
@@ -658,6 +683,7 @@ export const App: React.FC = () => {
         value: BigInt(0),
       });
       setLatestTxHash(hash);
+      setPendingTx({ jobId, action: 'cancel', statusText: 'Refunding escrow on-chain...' });
       const receipt = await client.waitForTransactionReceipt({
         hash,
         status: TransactionStatus.FINALIZED,
@@ -673,9 +699,14 @@ export const App: React.FC = () => {
       await fetchOnChainData();
       await fetchBalance(account);
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Failed to cancel job.');
+      if (err?.code === 4001 || err?.message?.includes('User rejected')) {
+        setErrorMsg('Cancel request was rejected in your wallet extension.');
+      } else {
+        setErrorMsg(err?.message || 'Failed to cancel job.');
+      }
     } finally {
       setIsTxPending(false);
+      setPendingTx(null);
     }
   };
 
@@ -996,10 +1027,24 @@ export const App: React.FC = () => {
                             setIsCreateOpen(true);
                           }
                         }}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:-translate-y-0.5 active:translate-y-0"
+                        disabled={isTxPending}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg ${
+                          isTxPending
+                            ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60 shadow-none'
+                            : 'bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer'
+                        }`}
                       >
-                        <PlusCircle className="w-4 h-4" />
-                        <span>Commission Sub-Agent & Lock Escrow</span>
+                        {isTxPending && pendingTx?.action === 'create' ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+                            <span className="text-cyan-300">{pendingTx.statusText}</span>
+                          </>
+                        ) : (
+                          <>
+                            <PlusCircle className="w-4 h-4" />
+                            <span>Commission Sub-Agent & Lock Escrow</span>
+                          </>
+                        )}
                       </button>
 
                       <a
@@ -1198,7 +1243,12 @@ export const App: React.FC = () => {
                     if (!account) handleConnectWallet();
                     else setIsCreateOpen(true);
                   }}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all hover:scale-105"
+                  disabled={isTxPending}
+                  className={`px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg transition-all ${
+                    isTxPending
+                      ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-50 shadow-none'
+                      : 'bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 shadow-cyan-500/20 hover:scale-105 cursor-pointer'
+                  }`}
                 >
                   Commission SLA Bounty
                 </button>
@@ -1215,6 +1265,8 @@ export const App: React.FC = () => {
                     onCancelJob={handleCancelJob}
                     onInspectJury={(j) => setSelectedJobForJury(j)}
                     isAdjudicating={adjudicatingJobId === job.job_id}
+                    isTxPending={isTxPending}
+                    pendingTx={pendingTx}
                   />
                 ))}
               </div>

@@ -205,9 +205,10 @@ export const CreateJob: React.FC<CreateJobProps> = ({
             <input
               type="text"
               value={repoUrl}
+              disabled={isLoading}
               onChange={(e) => setRepoUrl(e.target.value)}
               placeholder="https://github.com/organization/repository"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm text-slate-100 font-mono placeholder:text-slate-600 outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm text-slate-100 font-mono placeholder:text-slate-600 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               required
             />
           </div>
@@ -228,9 +229,10 @@ export const CreateJob: React.FC<CreateJobProps> = ({
                 step="0.01"
                 min="0.01"
                 value={bountyGen}
+                disabled={isLoading}
                 onChange={(e) => setBountyGen(e.target.value)}
                 placeholder="1.5"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm text-slate-100 font-mono placeholder:text-slate-600 outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm text-slate-100 font-mono placeholder:text-slate-600 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                 required
               />
               <div className="absolute right-3.5 top-2.5 text-xs font-mono font-bold text-cyan-400">
@@ -252,9 +254,10 @@ export const CreateJob: React.FC<CreateJobProps> = ({
             <textarea
               rows={5}
               value={slaSpec}
+              disabled={isLoading}
               onChange={(e) => setSlaSpec(e.target.value)}
               placeholder="Describe exact requirements, deliverables, test standards, and constraints for the Sub-Agent..."
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-xs text-slate-100 font-mono placeholder:text-slate-600 outline-none leading-relaxed"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-xs text-slate-100 font-mono placeholder:text-slate-600 outline-none leading-relaxed disabled:opacity-50 disabled:cursor-not-allowed"
               required
             />
           </div>
@@ -273,18 +276,22 @@ export const CreateJob: React.FC<CreateJobProps> = ({
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
+              className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50"
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-lg ${
+                isLoading
+                  ? 'bg-cyan-950/80 border border-cyan-500/50 text-cyan-300 cursor-not-allowed shadow-none'
+                  : 'bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 shadow-cyan-500/20 cursor-pointer active:translate-y-0.5'
+              }`}
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
                   <span>Locking Escrow on-chain...</span>
                 </>
               ) : (
