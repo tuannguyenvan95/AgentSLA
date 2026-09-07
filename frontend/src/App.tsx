@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { createClient } from 'genlayer-js';
 import { studionet } from 'genlayer-js/chains';
+import { TransactionStatus, ExecutionResult } from 'genlayer-js/types';
 import { 
   PlusCircle, 
   Search, 
@@ -402,6 +403,12 @@ export const App: React.FC = () => {
   }, [fetchOnChainData, account, fetchBalance]);
 
   // Transaction Actions
+  const isTxSuccessful = (receipt: any): boolean => {
+    return (
+      receipt?.txExecutionResultName === ExecutionResult.FINISHED_WITH_RETURN ||
+      receipt?.txExecutionResultName === 'FINISHED_WITH_RETURN'
+    );
+  };
 
   // 1. Create Job & Lock Escrow
   const handleCreateJob = async (slaSpec: string, repoUrl: string, bountyGen: string, category: string) => {
@@ -426,16 +433,17 @@ export const App: React.FC = () => {
         value: weiAmount,
       });
       setLatestTxHash(hash);
-      setSuccessMsg('Transaction broadcasted! Awaiting confirmation on GenLayer Studionet...');
+      setSuccessMsg('Transaction broadcasted! Awaiting FINALIZED block on GenLayer Studionet...');
 
       const receipt = await client.waitForTransactionReceipt({
         hash,
+        status: TransactionStatus.FINALIZED,
         interval: 2000,
         retries: 120,
       });
 
-      if (receipt && (receipt.status === 0 || String(receipt.status) === '0x0')) {
-        throw new Error('Transaction reverted on-chain. Please ensure you have sufficient GEN balance.');
+      if (!isTxSuccessful(receipt)) {
+        throw new Error(`Transaction reverted: expected FINISHED_WITH_RETURN, got ${receipt?.txExecutionResultName || 'EXECUTION_FAILURE'}`);
       }
 
       setSuccessMsg(`SLA Job created & Escrow locked successfully! (Tx: ${hash.slice(0, 10)}...)`);
@@ -467,11 +475,16 @@ export const App: React.FC = () => {
       setLatestTxHash(hash);
       setSuccessMsg('Submitting PR deliverable to contract...');
 
-      await client.waitForTransactionReceipt({
+      const receipt = await client.waitForTransactionReceipt({
         hash,
+        status: TransactionStatus.FINALIZED,
         interval: 2000,
         retries: 120,
       });
+
+      if (!isTxSuccessful(receipt)) {
+        throw new Error(`Submit PR deliverable failed: expected FINISHED_WITH_RETURN, got ${receipt?.txExecutionResultName || 'EXECUTION_FAILURE'}`);
+      }
 
       setSuccessMsg('PR deliverable submitted! Ready for on-chain AI Jury adjudication.');
       await fetchOnChainData();
@@ -505,12 +518,13 @@ export const App: React.FC = () => {
 
       const receipt = await client.waitForTransactionReceipt({
         hash,
+        status: TransactionStatus.FINALIZED,
         interval: 2000,
         retries: 180,
       });
 
-      if (receipt && (receipt.status === 0 || String(receipt.status) === '0x0')) {
-        throw new Error('Adjudication failed or reverted on GenLayer.');
+      if (!isTxSuccessful(receipt)) {
+        throw new Error(`Adjudication failed: expected FINISHED_WITH_RETURN, got ${receipt?.txExecutionResultName || 'EXECUTION_FAILURE'}`);
       }
 
       setSuccessMsg('Adjudication completed! AI Consensus verdict recorded on-chain.');
@@ -545,11 +559,16 @@ export const App: React.FC = () => {
       setLatestTxHash(hash);
       setSuccessMsg('Submitting appeal transaction on-chain...');
 
-      await client.waitForTransactionReceipt({
+      const receipt = await client.waitForTransactionReceipt({
         hash,
+        status: TransactionStatus.FINALIZED,
         interval: 2000,
         retries: 120,
       });
+
+      if (!isTxSuccessful(receipt)) {
+        throw new Error(`Appeal submission failed: expected FINISHED_WITH_RETURN, got ${receipt?.txExecutionResultName || 'EXECUTION_FAILURE'}`);
+      }
 
       setSuccessMsg('Appeal filed successfully! Case escalated to AI Appellate Council.');
       await fetchOnChainData();
@@ -578,7 +597,17 @@ export const App: React.FC = () => {
         value: BigInt(0),
       });
       setLatestTxHash(hash);
-      await client.waitForTransactionReceipt({ hash, interval: 2000, retries: 120 });
+      const receipt = await client.waitForTransactionReceipt({
+        hash,
+        status: TransactionStatus.FINALIZED,
+        interval: 2000,
+        retries: 120,
+      });
+
+      if (!isTxSuccessful(receipt)) {
+        throw new Error(`Cancel job failed: expected FINISHED_WITH_RETURN, got ${receipt?.txExecutionResultName || 'EXECUTION_FAILURE'}`);
+      }
+
       setSuccessMsg(`Job ${jobId} cancelled. Escrow refund completed.`);
       await fetchOnChainData();
       await fetchBalance(account);
