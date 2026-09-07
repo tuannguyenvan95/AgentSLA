@@ -311,10 +311,24 @@ export const App: React.FC = () => {
       const validJobs = results.filter((j): j is Job => j !== null);
 
       if (validJobs.length > 0) {
-        setJobs(validJobs);
-        try {
-          localStorage.setItem(`agentsla_cached_jobs_${contractAddress}`, JSON.stringify(validJobs));
-        } catch {}
+        setJobs((prev) => {
+          const jobMap = new Map<string, Job>();
+          // Preserve all previously loaded jobs
+          prev.forEach((j) => jobMap.set(j.job_id, j));
+          // Overlay fresh on-chain data
+          validJobs.forEach((j) => jobMap.set(j.job_id, j));
+
+          const merged = Array.from(jobMap.values()).sort((a, b) => {
+            const numA = parseInt(a.job_id.replace('sla-', ''), 10) || 0;
+            const numB = parseInt(b.job_id.replace('sla-', ''), 10) || 0;
+            return numB - numA;
+          });
+
+          try {
+            localStorage.setItem(`agentsla_cached_jobs_${contractAddress}`, JSON.stringify(merged));
+          } catch {}
+          return merged;
+        });
       }
     } catch (err: any) {
       console.warn('Transient error in fetchOnChainData:', err);
