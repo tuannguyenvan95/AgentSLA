@@ -29,3 +29,17 @@
     linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
 }
+
+@keyframes toastProgress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+.toast-progress-success {
+  animation: toastProgress 6s linear forwards;
+}
+
+.toast-progress-error {
+  animation: toastProgress 7s linear forwards;
+}
+

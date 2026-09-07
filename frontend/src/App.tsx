@@ -91,6 +91,23 @@ export const App: React.FC = () => {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [latestTxHash, setLatestTxHash] = useState<string | null>(null);
 
+  // Auto-dismiss notification toasts with gentle pulse effect (auto fades after 6-7s)
+  useEffect(() => {
+    if (!successMsg || isTxPending) return;
+    const timer = setTimeout(() => {
+      setSuccessMsg(null);
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, [successMsg, isTxPending]);
+
+  useEffect(() => {
+    if (!errorMsg || isTxPending) return;
+    const timer = setTimeout(() => {
+      setErrorMsg(null);
+    }, 7000);
+    return () => clearTimeout(timer);
+  }, [errorMsg, isTxPending]);
+
   // Check network ID
   const checkNetwork = useCallback(async () => {
     const eth = getEthereumProvider();
@@ -719,46 +736,54 @@ export const App: React.FC = () => {
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Alerts / Feedback */}
+        {/* Alerts / Feedback (Pulsing with auto-dismiss progress bar) */}
         {errorMsg && (
-          <div className="mb-6 p-4 rounded-xl bg-rose-950/70 border border-rose-500/50 text-rose-300 text-sm flex items-center justify-between shadow-lg shadow-rose-950/50 animate-in fade-in">
-            <div className="flex items-center gap-2.5">
-              <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />
-              <span>{errorMsg}</span>
+          <div className="mb-6 p-4 rounded-2xl bg-rose-950/80 border border-rose-500/70 text-rose-200 text-sm flex items-center justify-between shadow-2xl shadow-rose-950/60 backdrop-blur-md relative overflow-hidden animate-pulse transition-all duration-300">
+            <div className="flex items-center gap-2.5 min-w-0 z-10">
+              <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 animate-bounce" />
+              <span className="font-medium">{errorMsg}</span>
             </div>
             <button
               onClick={() => setErrorMsg(null)}
-              className="text-xs underline hover:text-rose-200 ml-4 font-mono shrink-0"
+              className="text-xs text-rose-300 hover:text-white ml-4 font-mono shrink-0 px-2.5 py-1 rounded-lg bg-rose-900/60 hover:bg-rose-900/90 border border-rose-500/40 transition-colors z-10"
             >
-              Dismiss
+              Dismiss ✕
             </button>
+            {/* Auto-fade timer progress bar */}
+            {!isTxPending && (
+              <div className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-rose-500 to-rose-400 toast-progress-error" />
+            )}
           </div>
         )}
 
         {successMsg && (
-          <div className="mb-6 p-4 rounded-2xl bg-emerald-950/70 border border-emerald-500/50 text-emerald-300 text-sm flex items-center justify-between shadow-xl shadow-emerald-950/40 backdrop-blur-md animate-in fade-in">
-            <div className="flex items-center gap-3 min-w-0">
+          <div className="mb-6 p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500/70 text-emerald-200 text-sm flex items-center justify-between shadow-2xl shadow-emerald-950/50 backdrop-blur-md relative overflow-hidden animate-pulse transition-all duration-300">
+            <div className="flex items-center gap-3 min-w-0 z-10">
               <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-              <span className="truncate">{successMsg}</span>
+              <span className="font-medium truncate">{successMsg}</span>
             </div>
-            <div className="flex items-center gap-3 shrink-0 ml-4">
+            <div className="flex items-center gap-3 shrink-0 ml-4 z-10">
               {latestTxHash && (
                 <a
                   href={getExplorerUrl(latestTxHash, 'tx')}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-xs underline hover:text-emerald-200 font-mono flex items-center gap-1"
+                  className="text-xs text-cyan-300 hover:underline font-mono flex items-center gap-1 px-2 py-0.5 rounded bg-slate-900/80 border border-cyan-500/30"
                 >
                   Explorer <ExternalLink className="w-3 h-3" />
                 </a>
               )}
               <button
                 onClick={() => setSuccessMsg(null)}
-                className="text-xs text-emerald-400/80 hover:text-emerald-200 px-2 py-1 rounded bg-emerald-900/40 hover:bg-emerald-900/70 transition-colors"
+                className="text-xs text-emerald-300 hover:text-white px-2.5 py-1 rounded-lg bg-emerald-900/60 hover:bg-emerald-900/90 border border-emerald-500/40 transition-colors"
               >
                 ✕
               </button>
             </div>
+            {/* Auto-fade timer progress bar */}
+            {!isTxPending && (
+              <div className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-emerald-400 to-teal-300 toast-progress-success" />
+            )}
           </div>
         )}
 
