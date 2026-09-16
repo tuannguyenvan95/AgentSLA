@@ -51,7 +51,7 @@ Constraints:
 Acceptance Criteria:
 1. Implement real-time block event subscriptions for contract payouts.
 2. Ensure responsive Dark Cyberpunk theme with zero layout shift (CLS < 0.05).
-3. MetaMask auto-network switch targeting GenLayer Studionet (61999).
+3. MetaMask auto-network switch targeting GenLayer Studio Next (61997).
 Constraints:
 - Zero private keys in environment bundles; strict wallet signing.`,
   },

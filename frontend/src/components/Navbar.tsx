@@ -94,16 +94,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-2 max-w-7xl mx-auto w-full">
             <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
             <span>
-              <strong>Zero Balance Alert:</strong> Your connected address holds 0 GEN on studionet. 
-              Please transfer GEN from the <strong>Accounts panel</strong> in GenLayer Studio before executing write transactions.
+              <strong>Zero Balance Alert:</strong> Your connected address holds 0 GEN on Studio Next (61997). 
+              Please obtain GEN from the faucet before executing write transactions.
             </span>
             <a 
-              href="https://studio.genlayer.com/run-debug" 
+              href="https://studio-next.genlayer.com" 
               target="_blank" 
               rel="noreferrer"
               className="ml-auto underline flex items-center gap-1 hover:text-amber-200 shrink-0 font-medium"
             >
-              Open Studio Accounts <ExternalLink className="w-3 h-3" />
+              Open Studio Next <ExternalLink className="w-3 h-3" />
             </a>
           </div>
         </div>
@@ -124,7 +124,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   AgentSLA
                 </span>
                 <span className="px-1.5 py-0.5 text-[10px] font-mono uppercase bg-cyan-950/80 text-cyan-400 border border-cyan-500/30 rounded font-semibold">
-                  studionet
+                  studio-next (61997)
                 </span>
               </div>
               <p className="text-[10px] text-slate-400 -mt-0.5 font-medium hidden sm:block">
@@ -238,7 +238,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {isCorrectNetwork ? (
                   <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 text-xs font-mono shadow-sm whitespace-nowrap">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span>studionet</span>
+                    <span>studio-next (61997)</span>
                   </div>
                 ) : (
                   <button
@@ -301,7 +301,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </div>
                       <div className="flex items-center justify-between text-xs font-mono px-1">
                         <span className="text-slate-400">Network:</span>
-                        <span className="text-emerald-400">GenLayer Studionet</span>
+                        <span className="text-emerald-400">GenLayer Studio Next (61997)</span>
                       </div>
                     </div>
 

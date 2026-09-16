@@ -1,11 +1,11 @@
 # 🏛️ AgentSLA — Autonomous Sub-Agent SLA Adjudication & Bounty Escrow
 
 > **Track:** Agentic Economy Infrastructure & Subjective Consensus  
-> **Network:** GenLayer `studionet` (Chain ID: `61999` / `0xF1EF`, RPC: `https://studio.genlayer.com/api`)  
-> **Target Portal:** GenLayer Portal (Builders Track — `portal.genlayer.foundation`)  
-> **GitHub Repository:** [https://github.com/tuannguyenvan95/AgentSLA](https://github.com/tuannguyenvan95/AgentSLA)  
-> **Official Intelligent Contract:** `0xe0F5e6FdC4810AE2030e680f75d6D9F8aBf96829`  
-> **Live dApp URL (Vercel):** [https://agentsla-court.vercel.app](https://agentsla-court.vercel.app)
+> **Network:** GenLayer Studio Next (Chain ID: `61997` / `0xF22D`, RPC: `https://studio-next.genlayer.com/api`)  
+> **Official Intelligent Contract:** [`0x4Ea7D3381B27E0e93f7A280e6ffefC73f10BE313`](https://explorer-studio-dev.genlayer.com/address/0x4Ea7D3381B27E0e93f7A280e6ffefC73f10BE313)  
+> **Contract Explorer:** [https://explorer-studio-dev.genlayer.com/address/0x4Ea7D3381B27E0e93f7A280e6ffefC73f10BE313](https://explorer-studio-dev.genlayer.com/address/0x4Ea7D3381B27E0e93f7A280e6ffefC73f10BE313)  
+> **Live dApp URL (Vercel):** [https://agentsla-court.vercel.app](https://agentsla-court.vercel.app)  
+> **GitHub Repository:** [https://github.com/tuannguyenvan95/AgentSLA](https://github.com/tuannguyenvan95/AgentSLA)
 
 ---
 
@@ -65,20 +65,21 @@ AgentSLA adheres 100% to the GenLayer development and deployment specifications:
 
 | Rule Code | Rule Summary | AgentSLA Implementation |
 |---|---|---|
-| **D1 / R24** | Network locked to `studionet` | Hardcoded chain `61999`, RPC `https://studio.genlayer.com/api`. Faucets & testnets strictly avoided. |
-| **Rule #1** | Pragma on Line 1 | `# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }` |
+| **D1 / R24** | Network locked to Studio Next | Hardcoded chain `61997` (`0xF22D`), RPC `https://studio-next.genlayer.com/api`, Explorer `https://explorer-studio-dev.genlayer.com`. |
+| **Rule #1** | Pragma on Line 1 | `# { "Depends": "py-genlayer:5jycge4q8k23462jtb0b9fyey1s9qz928sz2nbrd9mg4sxqg2qng" }` |
 | **Rule #2** | No `TreeMap` reassignment in `__init__` | Storage maps are auto-initialized by GenVM. |
 | **Rule #3 / #4** | Calldata boundary types | No `float` in signatures. Sized ints and strings only. |
 | **Rule #5 / R14** | Storage types | No bare `int` in storage. Uses `bigint` for financial amounts and sized ints (`u8`, `u32`, `u64`, `u256`). |
-| **Rule #6** | Single contract class | Defined as `class Contract(gl.Contract)`. |
+| **Rule #6** | Single contract class | Defined as `class AgentSLA(gl.contract.Contract):`. |
 | **Rule #7** | Non-deterministic wrapper | All web rendering and LLM calls reside in `gl.vm.run_nondet(leader_fn, validator_fn)`. |
 | **R13** | Star import | Uses `from genlayer import *`. No alias imports. |
-| **R15** | Native transfer | Uses `gl.get_contract_at(addr).emit_transfer(value=u256(amount))`. |
+| **R15** | Native transfer | Uses `gl.contract.get_at(addr).emit_transfer(value=u256(amount))`. |
 | **R17** | Simulator mocks format | Test suite installs bare dict params for `sim_installMocks` (no list wrapping). |
-| **R18** | Storage struct decorator | `@allow_storage @dataclass class Job:` |
+| **R18** | Storage struct decorator | `@gl.storage.allow` `@dataclass class Job:` |
 | **R19** | String keys in storage | `TreeMap[str, Job]` with string keys for all public views. |
 | **R21 / R22** | Wallet signing & balance | Uses connected MetaMask wallet. Auto-checks for > 0 GEN balance and prompts Studio Accounts panel. |
-| **R23** | Auto network switch | Invokes `wallet_switchEthereumChain` / `wallet_addEthereumChain` targeting Chain ID `61999`. |
+| **R23** | Auto network switch | Invokes `wallet_switchEthereumChain` / `wallet_addEthereumChain` targeting Chain ID `61997` (`0xF22D`). |
+| **v0.6 Fees** | Consensus Fees Distribution | Supports GenLayer v0.6 execution fees distribution mechanism. |
 
 ---
 
@@ -119,19 +120,19 @@ AgentSLA/
 
 ## 🚀 5. Quickstart & Deployment Guide
 
-### A. Deploy Intelligent Contract on GenLayer Studio (studionet)
+### A. Deploy Intelligent Contract on GenLayer Studio Next (Chain ID: 61997)
 
-1. Open **[GenLayer Studio](https://studio.genlayer.com/run-debug)**.
-2. **Settings** -> Click **Reset Storage** -> Confirm -> Hard Refresh (Ctrl+Shift+R).
-3. Create a new file in the Studio editor: `contract.py`.
+1. Open **[GenLayer Studio Next](https://studio-next.genlayer.com)**.
+2. Ensure you are on Network `Studio Next` (Chain ID `61997`).
+3. Create or open `contracts/contract.py` in the Studio editor.
 4. Copy and paste the complete code from [`contracts/contract.py`](contracts/contract.py).
 5. Click **Deploy Contract**.
 6. **Verify Deployment:**
-   - Click the transaction in the left sidebar.
-   - Confirm `Result: SUCCESS` (do not just check `Status: FINALIZED`).
+   - Confirm status `ACCEPTED` and execution `FINISHED_WITH_RETURN`.
+   - The official live deployment is at [`0x4Ea7D3381B27E0e93f7A280e6ffefC73f10BE313`](https://explorer-studio-dev.genlayer.com/address/0x4Ea7D3381B27E0e93f7A280e6ffefC73f10BE313).
 7. Copy the deployed contract address and set it in `frontend/src/config/genlayer.ts`:
    ```typescript
-   export const AGENTSLA_CONTRACT_ADDRESS = "0xYourDeployedContractAddress";
+   export const AGENTSLA_CONTRACT_ADDRESS = "0x4Ea7D3381B27E0e93f7A280e6ffefC73f10BE313";
    ```
 
 ### B. Run Contract Test Suite
@@ -141,7 +142,7 @@ Run the comprehensive pytest suite locally:
 pytest tests/test_agentsla.py -v
 ```
 
-All 7 test cases will pass:
+All 7 test cases pass:
 - `test_create_job_success`: Escrow locking & state persistence
 - `test_create_job_zero_bounty_reverts`: UserError guards against 0 value
 - `test_submit_deliverable_success`: Sub-agent delivers PR URL
@@ -159,8 +160,8 @@ npm run dev
 ```
 
 1. Connect your MetaMask wallet.
-2. If prompted, approve switching to **GenLayer Studio Network** (Chain ID: `61999`).
-3. Ensure your wallet has GEN funds transferred from the GenLayer Studio **Accounts panel**.
+2. If prompted, approve switching to **GenLayer Studio Next Network** (Chain ID: `61997` / `0xF22D`).
+3. Ensure your wallet has GEN funds transferred from the Studio Next Accounts / Faucet panel.
 4. Lock an escrow bounty and experience on-chain subjective consensus!
 
 ---

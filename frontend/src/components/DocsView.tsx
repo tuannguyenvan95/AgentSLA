@@ -189,7 +189,7 @@ export const DocsView: React.FC = () => {
             <tbody className="divide-y divide-slate-800 text-slate-300">
               <tr>
                 <td className="p-3 font-bold text-cyan-400">D1 / R24</td>
-                <td className="p-3">Network locked to studionet only (Chain 61999)</td>
+                <td className="p-3">Network locked to Studio Next (Chain 61997)</td>
                 <td className="p-3 text-emerald-400 font-bold">✓ 100% Compliant</td>
               </tr>
               <tr>
@@ -209,12 +209,12 @@ export const DocsView: React.FC = () => {
               </tr>
               <tr>
                 <td className="p-3 font-bold text-cyan-400">R15</td>
-                <td className="p-3">Transfer via gl.get_contract_at(addr).emit_transfer</td>
+                <td className="p-3">Transfer via gl.contract.get_at(addr).emit_transfer</td>
                 <td className="p-3 text-emerald-400 font-bold">✓ 100% Compliant</td>
               </tr>
               <tr>
                 <td className="p-3 font-bold text-cyan-400">R18</td>
-                <td className="p-3">Struct decorated with @allow_storage @dataclass</td>
+                <td className="p-3">Struct decorated with @gl.storage.allow @dataclass</td>
                 <td className="p-3 text-emerald-400 font-bold">✓ 100% Compliant</td>
               </tr>
               <tr>
@@ -229,7 +229,7 @@ export const DocsView: React.FC = () => {
               </tr>
               <tr>
                 <td className="p-3 font-bold text-cyan-400">R23</td>
-                <td className="p-3">Auto wallet_switchEthereumChain targeting 61999</td>
+                <td className="p-3">Auto wallet_switchEthereumChain targeting 61997</td>
                 <td className="p-3 text-emerald-400 font-bold">✓ 100% Compliant</td>
               </tr>
             </tbody>

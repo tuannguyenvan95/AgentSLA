@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { createClient } from 'genlayer-js';
-import { studionet } from 'genlayer-js/chains';
 import { TransactionStatus, ExecutionResult } from 'genlayer-js/types';
 import { 
   PlusCircle, 
@@ -19,7 +18,8 @@ import {
   getContractAddress,
   STUDIONET_CONFIG, 
   switchToStudionet,
-  getEthereumProvider
+  getEthereumProvider,
+  studioNext
 } from './config/genlayer';
 import { Job, toWeiGEN, formatGEN, getExplorerUrl } from './utils/helpers';
 import { Navbar, NavTab } from './components/Navbar';
@@ -46,7 +46,7 @@ export const App: React.FC = () => {
   const client = useMemo(() => {
     const eth = getEthereumProvider();
     return createClient({
-      chain: studionet,
+      chain: studioNext as any,
       provider: eth || undefined,
       account: account as `0x${string}` | undefined,
     });
@@ -182,7 +182,7 @@ export const App: React.FC = () => {
             setIsCorrectNetwork(true);
             await fetchBalance(primary);
           } else {
-            setErrorMsg('Wallet connected, but on an unsupported network. Please click "Switch Chain" in the top bar to switch to GenLayer Studionet (Chain 61999).');
+            setErrorMsg('Wallet connected, but on an unsupported network. Please click "Switch Chain" in the top bar to switch to GenLayer Studio Next (Chain 61997).');
           }
         }
       } catch (netErr: any) {
@@ -448,7 +448,7 @@ export const App: React.FC = () => {
       throw new Error('Please connect your MetaMask wallet.');
     }
     if (!isCorrectNetwork) {
-      throw new Error('Please switch to GenLayer Studionet (Chain ID 61999).');
+      throw new Error('Please switch to GenLayer Studio Next (Chain ID 61997).');
     }
     if (!contractAddress || !contractAddress.startsWith('0x') || contractAddress === '0x0000000000000000000000000000000000000000') {
       throw new Error('No valid Intelligent Contract configured.');
@@ -1292,7 +1292,7 @@ export const App: React.FC = () => {
             <div className="flex items-center gap-4 text-xs font-mono">
               <span className="flex items-center gap-1.5 text-emerald-400">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                studionet (61999) Active
+                studio-next (61997) Active
               </span>
               <span className="text-slate-600">|</span>
               <a
