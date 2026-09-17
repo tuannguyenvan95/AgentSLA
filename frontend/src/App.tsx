@@ -56,18 +56,6 @@ export const App: React.FC = () => {
   // 100% Real On-Chain State with SWR local caching to prevent rate-limit flickering
   const [jobs, setJobs] = useState<Job[]>(() => {
     try {
-      // Strict contract isolation: purge any legacy cache from old contracts so old tasks NEVER leak
-      const keysToRemove: string[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k && (k.startsWith('agentsla_cached_jobs_') || k.startsWith('agentsla_cached_escrow_'))) {
-          if (!k.endsWith(contractAddress)) {
-            keysToRemove.push(k);
-          }
-        }
-      }
-      keysToRemove.forEach((k) => localStorage.removeItem(k));
-
       const cached = localStorage.getItem(`agentsla_cached_jobs_${contractAddress}`);
       if (cached) {
         const parsed = JSON.parse(cached);
@@ -342,24 +330,23 @@ export const App: React.FC = () => {
       const validJobs = results.filter((j): j is Job => j !== null);
 
       if (validJobs.length > 0) {
-        setJobs((prev) => {
-          const jobMap = new Map<string, Job>();
-          // Preserve all previously loaded jobs
-          prev.forEach((j) => jobMap.set(j.job_id, j));
-          // Overlay fresh on-chain data
-          validJobs.forEach((j) => jobMap.set(j.job_id, j));
-
-          const merged = Array.from(jobMap.values()).sort((a, b) => {
+        setJobs(() => {
+          const sorted = [...validJobs].sort((a, b) => {
             const numA = parseInt(a.job_id.replace('sla-', ''), 10) || 0;
             const numB = parseInt(b.job_id.replace('sla-', ''), 10) || 0;
             return numB - numA;
           });
 
           try {
-            localStorage.setItem(`agentsla_cached_jobs_${contractAddress}`, JSON.stringify(merged));
+            localStorage.setItem(`agentsla_cached_jobs_${contractAddress}`, JSON.stringify(sorted));
           } catch {}
-          return merged;
+          return sorted;
         });
+      } else if (totalCount === 0) {
+        setJobs([]);
+        try {
+          localStorage.removeItem(`agentsla_cached_jobs_${contractAddress}`);
+        } catch {}
       }
     } catch (err: any) {
       console.warn('Transient error in fetchOnChainData:', err);

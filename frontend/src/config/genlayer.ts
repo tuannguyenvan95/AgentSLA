@@ -21,27 +21,35 @@ export const studioNext = {
   },
 };
 
+export function purgeOldContractCaches() {
+  try {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('agentsla_cached_jobs_') || key.startsWith('agentsla_cached_escrow_'))) {
+        if (!key.toLowerCase().includes(DEFAULT_CONTRACT_ADDRESS.toLowerCase())) {
+          keysToRemove.push(key);
+        }
+      }
+    }
+    keysToRemove.forEach((k) => localStorage.removeItem(k));
+  } catch {}
+}
+
 export function getContractAddress(): string {
   try {
+    // Automatically purge old contract task caches
+    purgeOldContractCaches();
+
     const saved = localStorage.getItem('agentsla_contract_address');
-    // If the saved contract address differs from the active DEFAULT_CONTRACT_ADDRESS,
-    // automatically purge all legacy cached tasks and escrow data so old contract tasks never appear!
-    if (saved && saved.trim().toLowerCase() !== DEFAULT_CONTRACT_ADDRESS.toLowerCase()) {
-      localStorage.removeItem('agentsla_contract_address');
-      try {
-        const keysToRemove: string[] = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const k = localStorage.key(i);
-          if (k && (k.startsWith('agentsla_cached_jobs_') || k.startsWith('agentsla_cached_escrow_'))) {
-            keysToRemove.push(k);
-          }
-        }
-        keysToRemove.forEach((k) => localStorage.removeItem(k));
-      } catch {}
-      return DEFAULT_CONTRACT_ADDRESS;
-    }
     if (saved && saved.trim().startsWith('0x') && saved.trim().length === 42) {
-      return saved.trim();
+      const trimmed = saved.trim();
+      // Purge any address that does not match the active contract
+      if (trimmed.toLowerCase() !== DEFAULT_CONTRACT_ADDRESS.toLowerCase()) {
+        localStorage.removeItem('agentsla_contract_address');
+        return DEFAULT_CONTRACT_ADDRESS;
+      }
+      return trimmed;
     }
   } catch {}
   return DEFAULT_CONTRACT_ADDRESS;
