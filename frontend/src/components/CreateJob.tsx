@@ -1,21 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusCircle, X, ShieldAlert, Sparkles, Loader2, Code2, ShieldCheck, Layers, FileCode2 } from 'lucide-react';
+
+export interface TemplateItem {
+  name: string;
+  category: string;
+  repo: string;
+  bounty: string;
+  spec: string;
+}
 
 interface CreateJobProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (slaSpec: string, repoUrl: string, bountyGen: string, category: string) => Promise<void>;
   isLoading: boolean;
+  initialTemplate?: TemplateItem | null;
 }
 
-const CATEGORIES = [
+export const CATEGORIES = [
   { id: 'SMART_CONTRACT', label: 'Smart Contract', icon: Code2, desc: 'EVM/GenVM contracts, token standards, state logic' },
   { id: 'SECURITY_AUDIT', label: 'Security Audit', icon: ShieldCheck, desc: 'Fuzzing, formal verification, vulnerability mitigation' },
   { id: 'FULL_STACK', label: 'Full-Stack Agent', icon: Layers, desc: 'dApp frontends, Web3 SDKs, indexers & bundlers' },
   { id: 'DOCS_DEV', label: 'Docs & Tutorials', icon: FileCode2, desc: 'NatSpec, API references, architecture guides' },
 ];
 
-const TEMPLATES = [
+export const TEMPLATES: TemplateItem[] = [
   {
     name: 'ERC-4337 Account Abstraction Sub-Agent',
     category: 'SMART_CONTRACT',
@@ -73,12 +82,22 @@ export const CreateJob: React.FC<CreateJobProps> = ({
   onClose,
   onSubmit,
   isLoading,
+  initialTemplate,
 }) => {
-  const [category, setCategory] = useState('SMART_CONTRACT');
-  const [repoUrl, setRepoUrl] = useState('');
-  const [slaSpec, setSlaSpec] = useState('');
-  const [bountyGen, setBountyGen] = useState('1.5');
+  const [category, setCategory] = useState(initialTemplate?.category || 'SMART_CONTRACT');
+  const [repoUrl, setRepoUrl] = useState(initialTemplate?.repo || '');
+  const [slaSpec, setSlaSpec] = useState(initialTemplate?.spec || '');
+  const [bountyGen, setBountyGen] = useState(initialTemplate?.bounty || '1.5');
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialTemplate) {
+      setCategory(initialTemplate.category);
+      setRepoUrl(initialTemplate.repo);
+      setSlaSpec(initialTemplate.spec);
+      setBountyGen(initialTemplate.bounty);
+    }
+  }, [initialTemplate, isOpen]);
 
   if (!isOpen) return null;
 
