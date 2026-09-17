@@ -802,7 +802,7 @@ export const App: React.FC = () => {
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-8 relative z-10">
         {/* Alerts / Feedback (Pulsing with auto-dismiss progress bar) */}
         {errorMsg && (
           <div className="mb-6 p-4 rounded-2xl bg-rose-950/80 border border-rose-500/70 text-rose-200 text-sm flex items-center justify-between shadow-2xl shadow-rose-950/60 backdrop-blur-md relative overflow-hidden animate-pulse transition-all duration-300">
@@ -873,7 +873,7 @@ export const App: React.FC = () => {
             {/* CONDITIONAL BANNER: ROLE DASHBOARD (MY_CONTRACTS) vs PLATFORM HERO (MARKETPLACE) */}
             {activeNavTab === 'MY_CONTRACTS' ? (
               /* DEDICATED ROLE-BASED GOVERNANCE & PORTFOLIO BANNER */
-              <div className="relative rounded-3xl bg-gradient-to-br from-slate-900 via-[#0d1526] to-[#070c17] border border-cyan-500/30 p-6 sm:p-8 mb-8 overflow-hidden shadow-2xl">
+              <div className="relative rounded-3xl bg-gradient-to-br from-slate-900 via-[#0d1526] to-[#070c17] border border-cyan-500/30 p-6 sm:p-8 mb-6 overflow-hidden shadow-2xl">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-slate-800/80">
                   <div>
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-xs font-mono mb-2">
@@ -999,7 +999,7 @@ export const App: React.FC = () => {
               </div>
             ) : (
               /* MARKETPLACE: HERO / BALANCED 2-COLUMN PLATFORM BANNER */
-              <div className="relative rounded-3xl bg-gradient-to-br from-slate-900/95 via-[#0b1324]/90 to-[#050a16]/95 border border-cyan-500/30 p-6 sm:p-8 lg:p-10 mb-8 overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] backdrop-blur-xl group">
+              <div className="relative rounded-3xl bg-gradient-to-br from-slate-900/95 via-[#0b1324]/90 to-[#050a16]/95 border border-cyan-500/30 p-5 sm:p-7 lg:p-8 mb-6 overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] backdrop-blur-xl group">
                 {/* Glowing top line accent */}
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-80" />
                 
@@ -1154,7 +1154,7 @@ export const App: React.FC = () => {
             <StatsBar jobs={jobs} totalEscrowLocked={totalEscrowLocked} />
 
             {/* UNIFIED CONTROLS & FILTER BAR */}
-            <div className="bg-slate-900/80 border border-slate-800/90 hover:border-cyan-500/30 rounded-2xl p-4 sm:p-5 mb-6 shadow-xl backdrop-blur-xl space-y-4 transition-all duration-300">
+            <div className="bg-slate-900/80 border border-slate-800/90 hover:border-cyan-500/30 rounded-2xl p-4 sm:p-5 mb-5 shadow-xl backdrop-blur-xl space-y-4 transition-all duration-300">
               {/* Top Row: Category Filter Chips */}
               <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
                 <div className="flex items-center gap-2 overflow-x-auto py-0.5">
@@ -1320,7 +1320,7 @@ export const App: React.FC = () => {
       </main>
 
       {/* Complete Footer */}
-      <footer className="border-t border-slate-800/80 bg-[#090d16] py-8 mt-16 text-xs text-slate-500">
+      <footer className="border-t border-slate-800/80 bg-[#090d16] py-8 mt-10 text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 pb-6 border-b border-slate-800/60">
             <div className="flex items-center gap-3">
