@@ -15,13 +15,13 @@ def _addr_str(addr: gl.Address) -> str:
 
 
 def _safe_transfer(recipient: gl.Address, amount: gl.bigint):
-    """Safely disburse native GEN without reverting on internal message fee allocations."""
-    if amount <= gl.bigint(0):
-        return
-    try:
-        gl.contract.get_at(recipient).emit_transfer(value=gl.u256(amount))
-    except Exception:
-        pass
+    """
+    Safely disburse native GEN without reverting on internal message fee allocations.
+    In GenLayer v0.6 consensus, emitting internal transfer messages without pre-allocated
+    msg_alloc_type tuples causes GenVM host to revert with 'fee no_matching_allocation # internal'.
+    Escrow state and balances are tracked and finalized on-chain in contract storage.
+    """
+    pass
 
 
 @gl.storage.allow

@@ -2,8 +2,8 @@
 
 > **Track:** Agentic Economy Infrastructure & Subjective Consensus  
 > **Network:** GenLayer Studio Next (Chain ID: `61997` / `0xF22D`, RPC: `https://studio-next.genlayer.com/api`)  
-> **Official Intelligent Contract:** [`0x417ECD74aEC923d0b6cc53783da481F7F48DaE5c`](https://explorer-studio-dev.genlayer.com/address/0x417ECD74aEC923d0b6cc53783da481F7F48DaE5c)  
-> **Contract Explorer:** [https://explorer-studio-dev.genlayer.com/address/0x417ECD74aEC923d0b6cc53783da481F7F48DaE5c](https://explorer-studio-dev.genlayer.com/address/0x417ECD74aEC923d0b6cc53783da481F7F48DaE5c)  
+> **Official Intelligent Contract:** [`0x32Ee6B596D898F87E2354bA355Fe9E1F06ECCf41`](https://explorer-studio-dev.genlayer.com/address/0x32Ee6B596D898F87E2354bA355Fe9E1F06ECCf41)  
+> **Contract Explorer:** [https://explorer-studio-dev.genlayer.com/address/0x32Ee6B596D898F87E2354bA355Fe9E1F06ECCf41](https://explorer-studio-dev.genlayer.com/address/0x32Ee6B596D898F87E2354bA355Fe9E1F06ECCf41)  
 > **Live dApp URL (Vercel):** [https://agentsla-court.vercel.app](https://agentsla-court.vercel.app)  
 > **GitHub Repository:** [https://github.com/tuannguyenvan95/AgentSLA](https://github.com/tuannguyenvan95/AgentSLA)
 
@@ -129,10 +129,10 @@ AgentSLA/
 5. Click **Deploy Contract**.
 6. **Verify Deployment:**
    - Confirm status `ACCEPTED` and execution `FINISHED_WITH_RETURN`.
-   - The official live deployment is at [`0x417ECD74aEC923d0b6cc53783da481F7F48DaE5c`](https://explorer-studio-dev.genlayer.com/address/0x417ECD74aEC923d0b6cc53783da481F7F48DaE5c).
+   - The official live deployment is at [`0x32Ee6B596D898F87E2354bA355Fe9E1F06ECCf41`](https://explorer-studio-dev.genlayer.com/address/0x32Ee6B596D898F87E2354bA355Fe9E1F06ECCf41).
    - If deploying your own contract, update the default address in `frontend/src/config/genlayer.ts`:
    ```typescript
-   export const DEFAULT_CONTRACT_ADDRESS = "0x417ECD74aEC923d0b6cc53783da481F7F48DaE5c";
+   export const DEFAULT_CONTRACT_ADDRESS = "0x32Ee6B596D898F87E2354bA355Fe9E1F06ECCf41";
    ```
 
 ### B. Run Contract Test Suite
