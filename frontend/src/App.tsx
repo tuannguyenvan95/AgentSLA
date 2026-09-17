@@ -56,6 +56,18 @@ export const App: React.FC = () => {
   // 100% Real On-Chain State with SWR local caching to prevent rate-limit flickering
   const [jobs, setJobs] = useState<Job[]>(() => {
     try {
+      // Strict contract isolation: purge any legacy cache from old contracts so old tasks NEVER leak
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && (k.startsWith('agentsla_cached_jobs_') || k.startsWith('agentsla_cached_escrow_'))) {
+          if (!k.endsWith(contractAddress)) {
+            keysToRemove.push(k);
+          }
+        }
+      }
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
+
       const cached = localStorage.getItem(`agentsla_cached_jobs_${contractAddress}`);
       if (cached) {
         const parsed = JSON.parse(cached);

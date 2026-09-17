@@ -131,6 +131,7 @@ if "genlayer" not in sys.modules:
     gl_mock.vm = MockVM()
     gl_mock.storage = MockStorage()
     gl_mock.contract = MockContractModule()
+    gl_mock.Contract = MockContractModule.Contract
     gl_mock.allow_storage = lambda cls: cls
     gl_mock.get_contract_at = lambda addr: MockContractAt(addr)
     gl_mock.gl = gl_mock

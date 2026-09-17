@@ -2,7 +2,7 @@ import { createClient } from 'genlayer-js';
 import { studionet } from 'genlayer-js/chains';
 
 // Official Deployed Intelligent Contract on GenLayer Studio Next (Chain 61997)
-export const DEFAULT_CONTRACT_ADDRESS = '0xF0A72788C03aaBa48d26b9B8EA9184524FD4E7D6';
+export const DEFAULT_CONTRACT_ADDRESS = '0x703Acd8De27B6D0E4177a9AcCFB1cDC623af9Ea8';
 
 export const studioNext = {
   ...studionet,
@@ -24,22 +24,24 @@ export const studioNext = {
 export function getContractAddress(): string {
   try {
     const saved = localStorage.getItem('agentsla_contract_address');
+    // If the saved contract address differs from the active DEFAULT_CONTRACT_ADDRESS,
+    // automatically purge all legacy cached tasks and escrow data so old contract tasks never appear!
+    if (saved && saved.trim().toLowerCase() !== DEFAULT_CONTRACT_ADDRESS.toLowerCase()) {
+      localStorage.removeItem('agentsla_contract_address');
+      try {
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && (k.startsWith('agentsla_cached_jobs_') || k.startsWith('agentsla_cached_escrow_'))) {
+            keysToRemove.push(k);
+          }
+        }
+        keysToRemove.forEach((k) => localStorage.removeItem(k));
+      } catch {}
+      return DEFAULT_CONTRACT_ADDRESS;
+    }
     if (saved && saved.trim().startsWith('0x') && saved.trim().length === 42) {
-      const trimmed = saved.trim();
-      // Purge zero address and legacy contract addresses
-      if (
-        trimmed.toLowerCase() === '0x0000000000000000000000000000000000000000' ||
-        trimmed.toLowerCase() === '0x2094c96b0ffdb9bbb72f2fcb52773a5c634f1991' ||
-        trimmed.toLowerCase() === '0x4ea7d3381b27e0e93f7a280e6ffefc73f10be313' ||
-        trimmed.toLowerCase() === '0xe0f5e6fdc4810ae2030e680f75d6d9f8abf96829' ||
-        trimmed.toLowerCase() === '0x20f857d9b26d74d1b2b6546ffdf295510d210e1b' ||
-        trimmed.toLowerCase() === '0x29486f9b2183fe278da68dd838d4a581f1b4e449' ||
-        trimmed.toLowerCase() === '0xff9f85509d24567e1bd2c4018a92d263a333e633'
-      ) {
-        localStorage.removeItem('agentsla_contract_address');
-        return DEFAULT_CONTRACT_ADDRESS;
-      }
-      return trimmed;
+      return saved.trim();
     }
   } catch {}
   return DEFAULT_CONTRACT_ADDRESS;
