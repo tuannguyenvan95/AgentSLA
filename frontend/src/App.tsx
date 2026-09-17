@@ -12,9 +12,7 @@ import {
   ExternalLink,
   Bot,
   Wallet,
-  ShieldCheck,
-  Sparkles,
-  BookOpen
+  ShieldCheck
 } from 'lucide-react';
 import { 
   getContractAddress,
@@ -27,7 +25,7 @@ import { Job, toWeiGEN, formatGEN, getExplorerUrl } from './utils/helpers';
 import { Navbar, NavTab } from './components/Navbar';
 import { StatsBar } from './components/StatsBar';
 import { JobCard, PendingTxState } from './components/JobCard';
-import { CreateJob, TEMPLATES, TemplateItem } from './components/CreateJob';
+import { CreateJob } from './components/CreateJob';
 import { SubmitPR } from './components/SubmitPR';
 import { JuryModal } from './components/JuryModal';
 import { CourtRoom } from './components/CourtRoom';
@@ -86,7 +84,6 @@ export const App: React.FC = () => {
 
   // Modals
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<TemplateItem | null>(null);
   const [selectedJobForPR, setSelectedJobForPR] = useState<Job | null>(null);
   const [selectedJobForJury, setSelectedJobForJury] = useState<Job | null>(null);
 
@@ -1002,46 +999,42 @@ export const App: React.FC = () => {
               </div>
             ) : (
               /* MARKETPLACE: HERO / BALANCED 2-COLUMN PLATFORM BANNER */
-              <div className="relative rounded-3xl bg-gradient-to-br from-slate-900/95 via-[#0a1122]/90 to-[#040813]/95 border border-cyan-500/30 p-5 sm:p-7 lg:p-8 mb-6 overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] backdrop-blur-xl group">
+              <div className="relative rounded-3xl bg-gradient-to-br from-slate-900/95 via-[#0b1324]/90 to-[#050a16]/95 border border-cyan-500/30 p-6 sm:p-8 lg:p-10 mb-8 overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] backdrop-blur-xl group">
                 {/* Glowing top line accent */}
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-90" />
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-80" />
                 
                 {/* Background Ambient Auras */}
                 <div className="absolute -top-24 -right-24 w-96 h-96 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none animate-pulse-slow" />
                 <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none animate-pulse-slow" style={{ animationDelay: '2.5s' }} />
 
-                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                   {/* Left Column: Title, Subtitle, CTAs */}
                   <div className="lg:col-span-7 flex flex-col justify-center">
-                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-xs font-mono mb-3.5 w-fit shadow-[0_0_15px_rgba(6,182,212,0.25)]">
+                    <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-xs font-mono mb-4 w-fit shadow-[0_0_15px_rgba(6,182,212,0.2)]">
                       <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-400"></span>
                       </span>
                       <Bot className="w-3.5 h-3.5 text-cyan-400" />
                       <span>GenLayer Autonomous Adjudication Court</span>
-                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-cyan-900/60 text-cyan-200 border border-cyan-400/30 font-bold">
-                        61997
-                      </span>
                     </div>
 
-                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white mb-3 leading-tight">
+                    <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white mb-4 leading-[1.15]">
                       Verifiable SLA Enforcement for the{' '}
-                      <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(6,182,212,0.4)]">
+                      <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(6,182,212,0.35)]">
                         Agentic Economy
                       </span>
                     </h1>
 
-                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-5 font-normal max-w-xl">
+                    <p className="text-sm sm:text-base text-slate-300 leading-relaxed mb-6 font-normal">
                       Master Agents commission specialized Sub-Agents with natural language SLAs and escrowed GEN bounties. 
-                      GenLayer AI validators fetch live GitHub PR diffs on-chain via <code className="text-cyan-300 font-mono text-[11px] bg-slate-950/80 px-1.5 py-0.5 rounded border border-cyan-500/30 shadow-inner">gl.nondet.web.render</code>, 
-                      reach subjective consensus on multi-dimensional criteria, and automatically settle escrow.
+                      GenLayer AI validators fetch live GitHub PR diffs on-chain via <code className="text-cyan-300 font-mono text-xs bg-slate-950/80 px-2 py-0.5 rounded-md border border-cyan-500/30 shadow-inner">gl.nondet.web.render</code>, 
+                      reach subjective consensus on multi-dimensional criteria (Specification, Quality, Tests), and automatically settle escrow.
                     </p>
 
-                    <div className="flex flex-wrap items-center gap-3 mb-4">
+                    <div className="flex flex-wrap items-center gap-3.5">
                       <button
                         onClick={() => {
-                          setSelectedTemplate(null);
                           if (!account) {
                             handleConnectWallet();
                           } else {
@@ -1049,10 +1042,10 @@ export const App: React.FC = () => {
                           }
                         }}
                         disabled={isTxPending}
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-xs sm:text-sm transition-all duration-300 shadow-xl ${
+                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black text-sm transition-all duration-300 shadow-xl ${
                           isTxPending
                             ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60 shadow-none'
-                            : 'bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer group'
+                            : 'bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 shadow-[0_0_25px_rgba(6,182,212,0.4)] hover:shadow-[0_0_35px_rgba(6,182,212,0.6)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer group'
                         }`}
                       >
                         {isTxPending && pendingTx?.action === 'create' ? (
@@ -1072,111 +1065,81 @@ export const App: React.FC = () => {
                         href={getExplorerUrl(contractAddress, 'address')}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-700 hover:border-cyan-500/50 text-slate-200 hover:text-white text-xs sm:text-sm font-semibold transition-all duration-300 shadow-md hover:shadow-[0_0_20px_rgba(6,182,212,0.2)] hover:-translate-y-0.5 group"
+                        className="flex items-center gap-2 px-4.5 py-3 rounded-xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-700 hover:border-cyan-500/50 text-slate-200 hover:text-white text-sm font-semibold transition-all duration-300 shadow-md hover:shadow-[0_0_20px_rgba(6,182,212,0.2)] hover:-translate-y-0.5 group"
                       >
                         <Terminal className="w-4 h-4 text-cyan-400 group-hover:text-cyan-300" />
                         <span>Contract on Explorer</span>
                         <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all" />
                       </a>
                     </div>
-
-                    <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono text-slate-400 pt-1">
-                      <span className="flex items-center gap-1 text-emerald-400">
-                        <ShieldCheck className="w-3.5 h-3.5" /> Non-Custodial Vault
-                      </span>
-                      <span className="text-slate-600">•</span>
-                      <span className="flex items-center gap-1 text-cyan-400">
-                        <Sparkles className="w-3.5 h-3.5" /> Subjective LLM Quorum
-                      </span>
-                      <span className="text-slate-600">•</span>
-                      <span className="flex items-center gap-1 text-purple-400">
-                        <Scale className="w-3.5 h-3.5" /> Decentralized Appeals
-                      </span>
-                    </div>
                   </div>
 
                   {/* Right Column: Visual Autonomous Protocol Pipeline Card */}
-                  <div className="lg:col-span-5 bg-gradient-to-b from-[#0a1120]/90 to-[#050811]/95 border border-cyan-500/25 rounded-2xl p-4 sm:p-5 shadow-2xl backdrop-blur-xl relative overflow-hidden">
-                    <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent" />
-                    
-                    <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800/80">
+                  <div className="lg:col-span-5 bg-slate-950/80 border border-slate-800/90 rounded-2xl p-5 sm:p-6 shadow-xl backdrop-blur-md relative overflow-hidden">
+                    <div className="flex items-center justify-between pb-3 mb-5 border-b border-slate-800/80">
                       <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                         <span className="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
                           SLA Execution Pipeline
                         </span>
                       </div>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-950/90 text-cyan-300 border border-cyan-500/40 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
-                        GenVM AI
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-500/40">
+                        On-Chain AI
                       </span>
                     </div>
 
-                    {/* 4 Pipeline Stages with animated connector beam */}
-                    <div className="relative space-y-2.5">
-                      {/* Vertical connector line behind nodes */}
-                      <div className="absolute left-[19px] top-4 bottom-4 w-[2px] bg-gradient-to-b from-cyan-500 via-purple-500 to-emerald-500 opacity-25" />
-                      <div className="absolute left-[19px] top-0 h-10 w-[2px] bg-cyan-400 animate-beam-travel shadow-[0_0_8px_#06b6d4]" />
+                    {/* 4 Pipeline Stages with connecting line */}
+                    <div className="relative space-y-3">
+                      {/* Vertical connecting line */}
+                      <div className="absolute left-[19px] top-4 bottom-4 w-[2px] bg-gradient-to-b from-cyan-500/30 via-purple-500/20 to-emerald-500/30 pointer-events-none" />
 
                       {/* Stage 1 */}
-                      <div className="relative flex items-center gap-3 p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/90 hover:border-cyan-500/50 transition-all duration-200 group">
-                        <div className="w-8 h-8 rounded-lg bg-cyan-950 text-cyan-300 border border-cyan-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold z-10 shadow-[0_0_10px_rgba(6,182,212,0.25)] group-hover:scale-105 transition-transform">
+                      <div className="relative flex items-center gap-4 p-3.5 rounded-xl bg-slate-900/70 border border-slate-800/80 hover:border-cyan-500/40 transition-all duration-200">
+                        <div className="w-9 h-9 rounded-lg bg-cyan-950 text-cyan-400 border border-cyan-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold z-10">
                           01
                         </div>
-                        <div className="text-xs min-w-0 flex-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold text-slate-100">Escrow Locked</span>
-                            <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-800/60">GEN Vault</span>
-                          </div>
-                          <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[13px] font-semibold text-slate-200 leading-tight">Escrow Locked</div>
+                          <div className="text-slate-400 text-[11px] leading-snug mt-0.5">
                             Master Agent locks GEN bounty in Intelligent Contract.
                           </div>
                         </div>
                       </div>
 
                       {/* Stage 2 */}
-                      <div className="relative flex items-center gap-3 p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/90 hover:border-amber-500/50 transition-all duration-200 group">
-                        <div className="w-8 h-8 rounded-lg bg-amber-950 text-amber-300 border border-amber-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold z-10 shadow-[0_0_10px_rgba(245,158,11,0.25)] group-hover:scale-105 transition-transform">
+                      <div className="relative flex items-center gap-4 p-3.5 rounded-xl bg-slate-900/70 border border-slate-800/80 hover:border-amber-500/40 transition-all duration-200">
+                        <div className="w-9 h-9 rounded-lg bg-amber-950 text-amber-400 border border-amber-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold z-10">
                           02
                         </div>
-                        <div className="text-xs min-w-0 flex-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold text-slate-100">Deliverable PR</span>
-                            <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-950/80 text-amber-300 border border-amber-800/60">GitHub Diff</span>
-                          </div>
-                          <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[13px] font-semibold text-slate-200 leading-tight">Deliverable PR</div>
+                          <div className="text-slate-400 text-[11px] leading-snug mt-0.5">
                             Sub-Agent submits verifiable GitHub Pull Request diff.
                           </div>
                         </div>
                       </div>
 
                       {/* Stage 3 */}
-                      <div className="relative flex items-center gap-3 p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/90 hover:border-purple-500/50 transition-all duration-200 group">
-                        <div className="w-8 h-8 rounded-lg bg-purple-950 text-purple-300 border border-purple-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold z-10 shadow-[0_0_10px_rgba(168,85,247,0.25)] group-hover:scale-105 transition-transform">
+                      <div className="relative flex items-center gap-4 p-3.5 rounded-xl bg-slate-900/70 border border-slate-800/80 hover:border-purple-500/40 transition-all duration-200">
+                        <div className="w-9 h-9 rounded-lg bg-purple-950 text-purple-300 border border-purple-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold z-10">
                           03
                         </div>
-                        <div className="text-xs min-w-0 flex-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold text-slate-100">AI Jury Consensus</span>
-                            <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-purple-950/80 text-purple-300 border border-purple-800/60">nondet.web</span>
-                          </div>
-                          <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
-                            Validators render code & reach subjective consensus.
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[13px] font-semibold text-slate-200 leading-tight">AI Jury Consensus</div>
+                          <div className="text-slate-400 text-[11px] leading-snug mt-0.5">
+                            Validators render code &amp; reach subjective consensus.
                           </div>
                         </div>
                       </div>
 
                       {/* Stage 4 */}
-                      <div className="relative flex items-center gap-3 p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/90 hover:border-emerald-500/50 transition-all duration-200 group">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold z-10 shadow-[0_0_10px_rgba(16,185,129,0.25)] group-hover:scale-105 transition-transform">
+                      <div className="relative flex items-center gap-4 p-3.5 rounded-xl bg-slate-900/70 border border-slate-800/80 hover:border-emerald-500/40 transition-all duration-200">
+                        <div className="w-9 h-9 rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold z-10">
                           04
                         </div>
-                        <div className="text-xs min-w-0 flex-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold text-slate-100">Settlement & Appeal</span>
-                            <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-800/60">Auto Release</span>
-                          </div>
-                          <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[13px] font-semibold text-slate-200 leading-tight">Settlement &amp; Appeal</div>
+                          <div className="text-slate-400 text-[11px] leading-snug mt-0.5">
                             Automatic bounty release or decentralized appeal court.
                           </div>
                         </div>
@@ -1282,113 +1245,40 @@ export const App: React.FC = () => {
                 </span>
               </div>
             ) : filteredJobs.length === 0 ? (
-              activeNavTab === 'MARKETPLACE' && jobs.length === 0 ? (
-                /* INTERACTIVE SLA LAUNCHPAD SHOWCASE */
-                <div className="relative rounded-3xl bg-gradient-to-b from-slate-900/90 via-[#0a1122]/90 to-[#050914]/95 border border-cyan-500/25 p-5 sm:p-7 mb-8 overflow-hidden shadow-2xl backdrop-blur-xl">
-                  <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent" />
-                  
-                  {/* Header */}
-                  <div className="text-center max-w-2xl mx-auto mb-6">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-xs font-mono mb-2.5">
-                      <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>Ready-to-Deploy SLA Templates</span>
-                    </div>
-                    <h3 className="text-lg sm:text-2xl font-black text-white tracking-tight">
-                      Test GenLayer Autonomous Court in 1 Click
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-400 mt-1 leading-relaxed">
-                      Intelligent Contract is active on Studio Next. Choose a pre-configured template below to lock GEN bounty and test AI-driven subjective adjudication:
-                    </p>
+              <div className="relative overflow-hidden py-16 px-6 text-center border border-dashed border-cyan-500/25 rounded-3xl bg-gradient-to-b from-slate-900/60 via-slate-900/30 to-slate-950/60 backdrop-blur-md max-w-2xl mx-auto my-6 shadow-2xl">
+                {/* Background ambient light */}
+                <div className="absolute inset-0 bg-cyan-500/5 pointer-events-none" />
+                
+                <div className="relative z-10">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-950/80 to-slate-900 border border-cyan-500/40 flex items-center justify-center text-cyan-400 mx-auto mb-4 shadow-[0_0_30px_rgba(6,182,212,0.25)] animate-float">
+                    <Scale className="w-8 h-8" />
                   </div>
-
-                  {/* 3 Interactive Template Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    {TEMPLATES.slice(0, 3).map((tmpl) => (
-                      <div
-                        key={tmpl.name}
-                        className="relative rounded-2xl bg-gradient-to-b from-slate-950/90 to-[#070d18]/90 border border-slate-800 hover:border-cyan-400/60 p-4 sm:p-5 flex flex-col justify-between group transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(6,182,212,0.25)]"
-                      >
-                        <div>
-                          <div className="flex items-center justify-between gap-2 mb-3">
-                            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-950/90 text-cyan-300 border border-cyan-500/30 font-bold">
-                              {tmpl.category.replace('_', ' ')}
-                            </span>
-                            <span className="text-xs font-mono font-bold text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-500/40">
-                              {tmpl.bounty} GEN
-                            </span>
-                          </div>
-
-                          <h4 className="font-bold text-slate-100 text-sm mb-2 group-hover:text-cyan-300 transition-colors line-clamp-1">
-                            {tmpl.name}
-                          </h4>
-
-                          <p className="text-[11px] text-slate-400 font-mono bg-slate-900/80 p-2.5 rounded-xl border border-slate-800/80 line-clamp-3 mb-4 leading-relaxed">
-                            {tmpl.spec.split('\n')[0]}
-                          </p>
-                        </div>
-
-                        <button
-                          onClick={() => {
-                            setSelectedTemplate(tmpl);
-                            if (!account) handleConnectWallet();
-                            else setIsCreateOpen(true);
-                          }}
-                          className="w-full py-2.5 rounded-xl bg-cyan-500/15 hover:bg-gradient-to-r hover:from-cyan-400 hover:to-teal-400 text-cyan-300 hover:text-slate-950 border border-cyan-500/40 hover:border-cyan-400 text-xs font-bold font-mono transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm group-hover:shadow-[0_0_15px_rgba(6,182,212,0.4)]"
-                        >
-                          <span>Deploy This SLA & Escrow</span>
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Primary Custom Action & Docs Shortcut */}
-                  <div className="flex flex-wrap items-center justify-center gap-3 pt-3 border-t border-slate-800/60">
-                    <button
-                      onClick={() => {
-                        setSelectedTemplate(null);
-                        if (!account) handleConnectWallet();
-                        else setIsCreateOpen(true);
-                      }}
-                      className="px-6 py-2.5 rounded-xl font-black text-xs bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)] hover:scale-105 transition-all duration-200 cursor-pointer flex items-center gap-2"
-                    >
-                      <PlusCircle className="w-4 h-4" />
-                      <span>Create Custom SLA from Scratch</span>
-                    </button>
-
-                    <button
-                      onClick={() => setActiveNavTab('DOCS')}
-                      className="px-5 py-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-mono border border-slate-700 hover:border-slate-600 transition-colors cursor-pointer flex items-center gap-2"
-                    >
-                      <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>Read Court Architecture Docs</span>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                /* Clean Standard Filter Empty State */
-                <div className="relative overflow-hidden py-10 px-6 text-center border border-slate-800/80 rounded-2xl bg-gradient-to-b from-slate-900/60 to-[#060912]/80 backdrop-blur-md max-w-xl mx-auto my-4 shadow-xl">
-                  <div className="w-12 h-12 rounded-xl bg-cyan-950/80 border border-cyan-500/40 flex items-center justify-center text-cyan-400 mx-auto mb-3 shadow-[0_0_20px_rgba(6,182,212,0.2)]">
-                    <Scale className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-base font-bold text-slate-100 mb-1">
+                  <h3 className="text-xl font-bold text-slate-100 mb-2">
                     {activeNavTab === 'MY_CONTRACTS'
-                      ? 'No Active Contracts in Your Portfolio'
+                      ? 'You Have No Active Contracts Yet'
+                      : jobs.length === 0
+                      ? 'Welcome to AgentSLA Marketplace'
                       : 'No Matching SLA Escrows Found'}
                   </h3>
-                  <p className="text-xs text-slate-400 max-w-sm mx-auto mb-4 leading-relaxed">
+                  <p className="text-xs text-slate-400 max-w-md mx-auto mb-6 leading-relaxed">
                     {activeNavTab === 'MY_CONTRACTS'
-                      ? 'You have not commissioned or claimed tasks with your connected address. Commission your first sub-agent below.'
-                      : 'No contracts match your active filter or search query. Try clearing filters.'}
+                      ? 'You have not commissioned any sub-agents or claimed any tasks with your connected wallet address. Click below to start.'
+                      : jobs.length === 0
+                      ? 'This Intelligent Contract is ready on Studio Next. Lock the first GEN bounty and test AI-driven subjective adjudication.'
+                      : 'No contracts match your active domain filter or search query. Reset filters or commission a new task.'}
                   </p>
                   <div className="flex items-center justify-center gap-3">
                     <button
                       onClick={() => {
-                        setSelectedTemplate(null);
                         if (!account) handleConnectWallet();
                         else setIsCreateOpen(true);
                       }}
-                      className="px-5 py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 shadow-md hover:scale-105 transition-all cursor-pointer"
+                      disabled={isTxPending}
+                      className={`px-6 py-3 rounded-xl font-black text-xs shadow-xl transition-all duration-300 ${
+                        isTxPending
+                          ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-50 shadow-none'
+                          : 'bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)] hover:scale-105 cursor-pointer'
+                      }`}
                     >
                       Commission SLA Bounty
                     </button>
@@ -1399,14 +1289,14 @@ export const App: React.FC = () => {
                           setActiveFilter('ALL');
                           setSearchQuery('');
                         }}
-                        className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono border border-slate-700 cursor-pointer transition-colors"
+                        className="px-4 py-3 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 text-xs font-mono border border-slate-700 cursor-pointer transition-colors"
                       >
                         Reset Filters
                       </button>
                     )}
                   </div>
                 </div>
-              )
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {filteredJobs.map((job) => (
@@ -1506,13 +1396,9 @@ export const App: React.FC = () => {
       {/* Modals */}
       <CreateJob
         isOpen={isCreateOpen}
-        onClose={() => {
-          setIsCreateOpen(false);
-          setSelectedTemplate(null);
-        }}
+        onClose={() => setIsCreateOpen(false)}
         onSubmit={handleCreateJob}
         isLoading={isTxPending}
-        initialTemplate={selectedTemplate}
       />
 
       <SubmitPR
