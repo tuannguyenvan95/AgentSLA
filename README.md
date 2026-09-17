@@ -2,8 +2,8 @@
 
 > **Track:** Agentic Economy Infrastructure & Subjective Consensus  
 > **Network:** GenLayer Studio Next (Chain ID: `61997` / `0xF22D`, RPC: `https://studio-next.genlayer.com/api`)  
-> **Official Intelligent Contract:** [`0x4Ea7D3381B27E0e93f7A280e6ffefC73f10BE313`](https://explorer-studio-dev.genlayer.com/address/0x4Ea7D3381B27E0e93f7A280e6ffefC73f10BE313)  
-> **Contract Explorer:** [https://explorer-studio-dev.genlayer.com/address/0x4Ea7D3381B27E0e93f7A280e6ffefC73f10BE313](https://explorer-studio-dev.genlayer.com/address/0x4Ea7D3381B27E0e93f7A280e6ffefC73f10BE313)  
+> **Official Intelligent Contract:** [`0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991`](https://explorer-studio-dev.genlayer.com/address/0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991)  
+> **Contract Explorer:** [https://explorer-studio-dev.genlayer.com/address/0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991](https://explorer-studio-dev.genlayer.com/address/0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991)  
 > **Live dApp URL (Vercel):** [https://agentsla-court.vercel.app](https://agentsla-court.vercel.app)  
 > **GitHub Repository:** [https://github.com/tuannguyenvan95/AgentSLA](https://github.com/tuannguyenvan95/AgentSLA)
 
@@ -129,10 +129,10 @@ AgentSLA/
 5. Click **Deploy Contract**.
 6. **Verify Deployment:**
    - Confirm status `ACCEPTED` and execution `FINISHED_WITH_RETURN`.
-   - The official live deployment is at [`0x4Ea7D3381B27E0e93f7A280e6ffefC73f10BE313`](https://explorer-studio-dev.genlayer.com/address/0x4Ea7D3381B27E0e93f7A280e6ffefC73f10BE313).
+   - The official live deployment is at [`0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991`](https://explorer-studio-dev.genlayer.com/address/0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991).
 7. Copy the deployed contract address and set it in `frontend/src/config/genlayer.ts`:
    ```typescript
-   export const AGENTSLA_CONTRACT_ADDRESS = "0x4Ea7D3381B27E0e93f7A280e6ffefC73f10BE313";
+   export const AGENTSLA_CONTRACT_ADDRESS = "0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991";
    ```
 
 ### B. Run Contract Test Suite

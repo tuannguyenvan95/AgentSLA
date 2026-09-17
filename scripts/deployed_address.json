@@ -3,8 +3,8 @@
   "chainId": 61997,
   "rpcUrl": "https://studio-next.genlayer.com/api",
   "canonicalRpcUrl": "https://studio-dev.genlayer.com/api",
-  "explorerUrl": "https://explorer-studio-dev.genlayer.com/address/0x4Ea7D3381B27E0e93f7A280e6ffefC73f10BE313",
-  "contractAddress": "0x4Ea7D3381B27E0e93f7A280e6ffefC73f10BE313",
-  "deployer": "0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1",
-  "deployedAt": "2026-09-16 15:09:32 UTC"
+  "explorerUrl": "https://explorer-studio-dev.genlayer.com/address/0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991",
+  "contractAddress": "0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991",
+  "deployer": "Studio Next Web UI",
+  "deployedAt": "2026-09-17 03:55:00 UTC"
 }
