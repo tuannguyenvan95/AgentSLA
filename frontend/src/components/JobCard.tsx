@@ -86,21 +86,24 @@ export const JobCard: React.FC<JobCardProps> = ({
   };
 
   return (
-    <div className={`bg-slate-900/80 border ${statusInfo.border} rounded-2xl p-5 shadow-lg transition-all hover:shadow-cyan-500/10 flex flex-col justify-between relative overflow-hidden group`}>
+    <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-b from-slate-900/95 via-slate-900/80 to-slate-950/95 border ${statusInfo.border} hover:border-cyan-500/50 p-5 shadow-xl transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_15px_35px_-10px_rgba(6,182,212,0.25)] flex flex-col justify-between backdrop-blur-md group`}>
+      {/* Top neon hairline accent */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-40 group-hover:opacity-100 transition-opacity" />
+
       {/* Top row: Job ID, Category & Status Badge */}
       <div>
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2">
-            <span className="font-mono font-bold text-sm text-cyan-300">
+            <span className="font-mono font-black text-sm text-cyan-300 tracking-wide group-hover:text-cyan-200 transition-colors">
               {job.job_id}
             </span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono border ${categoryInfo.badge}`}>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono border font-semibold ${categoryInfo.badge}`}>
               {categoryInfo.label}
             </span>
           </div>
 
-          <div className={`px-2.5 py-1 rounded-full text-xs font-mono font-semibold border flex items-center gap-1.5 ${statusInfo.badge}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${statusInfo.dot}`} />
+          <div className={`px-2.5 py-1 rounded-full text-xs font-mono font-bold border flex items-center gap-1.5 shadow-sm ${statusInfo.badge}`}>
+            <span className={`w-2 h-2 rounded-full ${statusInfo.dot} shadow-[0_0_8px_currentColor]`} />
             <span>{statusInfo.label}</span>
           </div>
         </div>
@@ -108,18 +111,18 @@ export const JobCard: React.FC<JobCardProps> = ({
         {/* Bounty & Repo */}
         <div className="flex items-baseline justify-between mb-4 pb-3 border-b border-slate-800/80">
           <div>
-            <span className="text-[10px] uppercase font-mono text-slate-400">Escrow Bounty</span>
-            <div className="text-xl font-mono font-extrabold text-emerald-400">
+            <span className="text-[10px] uppercase font-mono text-slate-400 block tracking-wider">Escrow Bounty</span>
+            <div className="text-xl font-mono font-black text-emerald-400 drop-shadow-[0_0_12px_rgba(16,185,129,0.3)]">
               {formatGEN(job.bounty_amount)}
             </div>
           </div>
           <div className="text-right max-w-[55%]">
-            <span className="text-[10px] uppercase font-mono text-slate-400">Target Repo</span>
+            <span className="text-[10px] uppercase font-mono text-slate-400 block tracking-wider">Target Repo</span>
             <a
               href={job.repo_url}
               target="_blank"
               rel="noreferrer"
-              className="text-xs font-mono text-cyan-400 hover:underline flex items-center justify-end gap-1 truncate"
+              className="text-xs font-mono text-cyan-400 hover:text-cyan-300 hover:underline flex items-center justify-end gap-1 truncate transition-colors"
             >
               <span className="truncate">{job.repo_url.replace('https://github.com/', '')}</span>
               <ExternalLink className="w-3 h-3 shrink-0" />

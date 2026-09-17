@@ -87,7 +87,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-[#090d16]/95 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-cyan-500/15 bg-[#060911]/90 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.6)] relative">
+      {/* Bottom hairline accent */}
+      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent pointer-events-none" />
+
       {/* Zero balance warning banner as mandated by R21 */}
       {account && isZeroBalance && (
         <div className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 text-xs text-amber-300 flex items-center justify-between">
@@ -112,22 +115,23 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="h-16 flex items-center justify-between gap-4">
           {/* Logo & Brand */}
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-teal-500 to-emerald-500 p-0.5 shadow-lg shadow-cyan-500/20">
-              <div className="w-full h-full bg-[#090d16] rounded-[10px] flex items-center justify-center">
-                <Cpu className="w-5 h-5 text-cyan-400" />
+          <div className="flex items-center gap-3 shrink-0 cursor-pointer" onClick={() => onSelectTab('MARKETPLACE')}>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-400 to-emerald-400 p-0.5 shadow-[0_0_20px_rgba(6,182,212,0.35)] hover:shadow-[0_0_25px_rgba(6,182,212,0.6)] transition-all group">
+              <div className="w-full h-full bg-[#060911] rounded-[10px] flex items-center justify-center group-hover:bg-slate-950 transition-colors">
+                <Cpu className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
               </div>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
+                <span className="font-black text-lg tracking-tight bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(6,182,212,0.3)]">
                   AgentSLA
                 </span>
-                <span className="px-1.5 py-0.5 text-[10px] font-mono uppercase bg-cyan-950/80 text-cyan-400 border border-cyan-500/30 rounded font-semibold">
+                <span className="px-2 py-0.5 text-[10px] font-mono uppercase bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 rounded-full font-bold shadow-[0_0_10px_rgba(6,182,212,0.2)] flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   studio-next (61997)
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400 -mt-0.5 font-medium hidden sm:block">
+              <p className="text-[10px] text-slate-400 -mt-0.5 font-medium hidden sm:block tracking-wide">
                 Autonomous Sub-Agent SLA Court & Escrow
               </p>
             </div>
