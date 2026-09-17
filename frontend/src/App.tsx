@@ -12,7 +12,8 @@ import {
   ExternalLink,
   Bot,
   Wallet,
-  ShieldCheck
+  ShieldCheck,
+  Sparkles
 } from 'lucide-react';
 import { 
   getContractAddress,
@@ -85,6 +86,7 @@ export const App: React.FC = () => {
 
   // Modals
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
+  const [preloadedTemplate, setPreloadedTemplate] = useState<any>(null);
   const [selectedJobForPR, setSelectedJobForPR] = useState<Job | null>(null);
   const [selectedJobForJury, setSelectedJobForJury] = useState<Job | null>(null);
 
@@ -1131,6 +1133,68 @@ export const App: React.FC = () => {
                         <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all" />
                       </a>
                     </div>
+
+                    {/* 1-Click Quick Deploy Preset Chips */}
+                    <div className="mt-5 pt-4 border-t border-slate-800/80 flex flex-wrap items-center gap-2">
+                      <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mr-1">
+                        <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-spin" style={{ animationDuration: '6s' }} />
+                        <span>1-Click Launch:</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!account) handleConnectWallet();
+                          else {
+                            setPreloadedTemplate({
+                              category: 'SECURITY_AUDIT',
+                              repo: 'https://github.com/agent-economy/defi-vault',
+                              bounty: '4.5',
+                              spec: 'Task: Comprehensive Security Audit & Echidna/Slither Fuzz Harness\nAcceptance Criteria:\n1. Deliver automated fuzz test harness testing invariant: totalAssets() == sum(userBalances).\n2. Identify and fix any potential inflation attacks on first ERC-4626 deposit.\n3. Provide automated report diff with zero critical or high severity findings.',
+                            });
+                            setIsCreateOpen(true);
+                          }
+                        }}
+                        className="px-2.5 py-1 rounded-lg text-[11px] font-mono bg-cyan-950/60 hover:bg-cyan-900/60 border border-cyan-500/40 text-cyan-300 hover:text-white transition-all shadow-sm hover:shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:scale-105 cursor-pointer"
+                      >
+                        🛡️ Security Audit (4.5 GEN)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!account) handleConnectWallet();
+                          else {
+                            setPreloadedTemplate({
+                              category: 'SMART_CONTRACT',
+                              repo: 'https://github.com/agent-economy/account-abstraction',
+                              bounty: '3.0',
+                              spec: 'Task: Implement ERC-4337 UserOperation validation module with 100% test coverage.\nAcceptance Criteria:\n1. Complete validation logic for custom bundler transactions conforming to EIP-4337.\n2. Gas overhead for validation must remain strictly below 45,000 gas.\n3. Unit test coverage must exceed 95% using Foundry / Hardhat.',
+                            });
+                            setIsCreateOpen(true);
+                          }
+                        }}
+                        className="px-2.5 py-1 rounded-lg text-[11px] font-mono bg-emerald-950/60 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 hover:text-white transition-all shadow-sm hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:scale-105 cursor-pointer"
+                      >
+                        ⚡ ERC-4337 (3.0 GEN)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!account) handleConnectWallet();
+                          else {
+                            setPreloadedTemplate({
+                              category: 'FULL_STACK',
+                              repo: 'https://github.com/agent-economy/agentsla-frontend',
+                              bounty: '2.5',
+                              spec: 'Task: High-performance React 18 + Viem Dashboard for Escrow Management\nAcceptance Criteria:\n1. Implement real-time block event subscriptions for contract payouts.\n2. Ensure responsive Dark Cyberpunk theme with zero layout shift (CLS < 0.05).\n3. MetaMask auto-network switch targeting GenLayer Studio Next (61997).',
+                            });
+                            setIsCreateOpen(true);
+                          }
+                        }}
+                        className="px-2.5 py-1 rounded-lg text-[11px] font-mono bg-purple-950/60 hover:bg-purple-900/60 border border-purple-500/40 text-purple-300 hover:text-white transition-all shadow-sm hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:scale-105 cursor-pointer"
+                      >
+                        🖥️ Web3 dApp (2.5 GEN)
+                      </button>
+                    </div>
                   </div>
 
                   {/* Right Column: Visual Autonomous Protocol Pipeline Card */}
@@ -1149,8 +1213,10 @@ export const App: React.FC = () => {
 
                     {/* 4 Pipeline Stages with connecting line */}
                     <div className="relative space-y-3">
-                      {/* Vertical connecting line */}
-                      <div className="absolute left-[19px] top-4 bottom-4 w-[2px] bg-gradient-to-b from-cyan-500/30 via-purple-500/20 to-emerald-500/30 pointer-events-none" />
+                      {/* Vertical connecting line with traveling photon laser beam */}
+                      <div className="absolute left-[19px] top-4 bottom-4 w-[2px] bg-gradient-to-b from-cyan-500/30 via-purple-500/20 to-emerald-500/30 pointer-events-none overflow-hidden">
+                        <div className="w-full h-16 bg-gradient-to-b from-transparent via-cyan-400 to-transparent animate-beam-travel shadow-[0_0_12px_#06b6d4]" />
+                      </div>
 
                       {/* Stage 1 */}
                       <div className="relative flex items-center gap-4 p-3.5 rounded-xl bg-slate-900/70 border border-slate-800/80 hover:border-cyan-500/40 transition-all duration-200">
@@ -1304,28 +1370,145 @@ export const App: React.FC = () => {
                 </span>
               </div>
             ) : filteredJobs.length === 0 ? (
-              <div className="relative overflow-hidden py-16 px-6 text-center border border-dashed border-cyan-500/25 rounded-3xl bg-gradient-to-b from-slate-900/60 via-slate-900/30 to-slate-950/60 backdrop-blur-md max-w-2xl mx-auto my-6 shadow-2xl">
-                {/* Background ambient light */}
-                <div className="absolute inset-0 bg-cyan-500/5 pointer-events-none" />
+              <div className="relative overflow-hidden py-12 px-6 sm:px-10 text-center border border-cyan-500/30 rounded-3xl bg-gradient-to-b from-slate-900/90 via-[#0a1122]/80 to-slate-950/95 backdrop-blur-xl max-w-4xl mx-auto my-6 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)]">
+                {/* Background ambient lighting */}
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-500/10 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-75" />
+
+                {/* Corner Accents */}
+                <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-cyan-400" />
+                <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-cyan-400" />
+                <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-cyan-400" />
+                <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-cyan-400" />
                 
                 <div className="relative z-10">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-950/80 to-slate-900 border border-cyan-500/40 flex items-center justify-center text-cyan-400 mx-auto mb-4 shadow-[0_0_30px_rgba(6,182,212,0.25)] animate-float">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-950/90 to-slate-900 border border-cyan-500/50 flex items-center justify-center text-cyan-400 mx-auto mb-4 shadow-[0_0_35px_rgba(6,182,212,0.35)] animate-float">
                     <Scale className="w-8 h-8" />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-100 mb-2">
+
+                  <h3 className="text-xl sm:text-2xl font-black text-white mb-2 tracking-tight">
                     {activeNavTab === 'MY_CONTRACTS'
-                      ? 'You Have No Active Contracts Yet'
+                      ? 'No Active Engagements on Connected Wallet'
                       : jobs.length === 0
-                      ? 'Welcome to AgentSLA Marketplace'
+                      ? 'AgentSLA Ready on Studio Next — Deploy First Escrow'
                       : 'No Matching SLA Escrows Found'}
                   </h3>
-                  <p className="text-xs text-slate-400 max-w-md mx-auto mb-6 leading-relaxed">
+
+                  <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto mb-8 leading-relaxed">
                     {activeNavTab === 'MY_CONTRACTS'
-                      ? 'You have not commissioned any sub-agents or claimed any tasks with your connected wallet address. Click below to start.'
+                      ? 'You have not commissioned any sub-agents or claimed tasks with this address yet. Commission a new task or switch to Marketplace to browse open work.'
                       : jobs.length === 0
-                      ? 'This Intelligent Contract is ready on Studio Next. Lock the first GEN bounty and test AI-driven subjective adjudication.'
+                      ? 'Your Intelligent Contract is 100% verified and active. Commission a sub-agent with real GEN escrow or use a 1-click test template below.'
                       : 'No contracts match your active domain filter or search query. Reset filters or commission a new task.'}
                   </p>
+
+                  {/* 1-Click Launch Preset Cards (Visible when contract is fresh) */}
+                  {jobs.length === 0 && activeNavTab !== 'MY_CONTRACTS' && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 text-left">
+                      {/* Template 1 */}
+                      <div
+                        onClick={() => {
+                          if (!account) handleConnectWallet();
+                          else {
+                            setPreloadedTemplate({
+                              category: 'SECURITY_AUDIT',
+                              repo: 'https://github.com/agent-economy/defi-vault',
+                              bounty: '4.5',
+                              spec: 'Task: Comprehensive Security Audit & Echidna/Slither Fuzz Harness\nAcceptance Criteria:\n1. Deliver automated fuzz test harness testing invariant: totalAssets() == sum(userBalances).\n2. Identify and fix any potential inflation attacks on first ERC-4626 deposit.\n3. Provide automated report diff with zero critical or high severity findings.',
+                            });
+                            setIsCreateOpen(true);
+                          }
+                        }}
+                        className="p-4 rounded-2xl bg-slate-950/80 border border-cyan-500/30 hover:border-cyan-400/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_25px_rgba(6,182,212,0.2)] cursor-pointer group"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-500/40">
+                            Security Audit
+                          </span>
+                          <span className="text-xs font-mono font-black text-emerald-400">4.5 GEN</span>
+                        </div>
+                        <div className="text-sm font-bold text-slate-100 group-hover:text-cyan-300 transition-colors">
+                          DeFi Vault Invariant Fuzzing
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                          Automated Slither &amp; Echidna test harness for ERC-4626 inflation attack prevention.
+                        </p>
+                        <div className="mt-3 text-[11px] font-mono text-cyan-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                          <span>⚡ Quick Launch</span>
+                          <span>→</span>
+                        </div>
+                      </div>
+
+                      {/* Template 2 */}
+                      <div
+                        onClick={() => {
+                          if (!account) handleConnectWallet();
+                          else {
+                            setPreloadedTemplate({
+                              category: 'SMART_CONTRACT',
+                              repo: 'https://github.com/agent-economy/account-abstraction',
+                              bounty: '3.0',
+                              spec: 'Task: Implement ERC-4337 UserOperation validation module with 100% test coverage.\nAcceptance Criteria:\n1. Complete validation logic for custom bundler transactions conforming to EIP-4337.\n2. Gas overhead for validation must remain strictly below 45,000 gas.\n3. Unit test coverage must exceed 95% using Foundry / Hardhat.',
+                            });
+                            setIsCreateOpen(true);
+                          }
+                        }}
+                        className="p-4 rounded-2xl bg-slate-950/80 border border-emerald-500/30 hover:border-emerald-400/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_25px_rgba(16,185,129,0.2)] cursor-pointer group"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/40">
+                            Smart Contract
+                          </span>
+                          <span className="text-xs font-mono font-black text-emerald-400">3.0 GEN</span>
+                        </div>
+                        <div className="text-sm font-bold text-slate-100 group-hover:text-emerald-300 transition-colors">
+                          ERC-4337 Bundler Validation
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                          UserOperation verification module with strict gas ceiling &lt; 45,000 gas.
+                        </p>
+                        <div className="mt-3 text-[11px] font-mono text-emerald-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                          <span>⚡ Quick Launch</span>
+                          <span>→</span>
+                        </div>
+                      </div>
+
+                      {/* Template 3 */}
+                      <div
+                        onClick={() => {
+                          if (!account) handleConnectWallet();
+                          else {
+                            setPreloadedTemplate({
+                              category: 'FULL_STACK',
+                              repo: 'https://github.com/agent-economy/agentsla-frontend',
+                              bounty: '2.5',
+                              spec: 'Task: High-performance React 18 + Viem Dashboard for Escrow Management\nAcceptance Criteria:\n1. Implement real-time block event subscriptions for contract payouts.\n2. Ensure responsive Dark Cyberpunk theme with zero layout shift (CLS < 0.05).\n3. MetaMask auto-network switch targeting GenLayer Studio Next (61997).',
+                            });
+                            setIsCreateOpen(true);
+                          }
+                        }}
+                        className="p-4 rounded-2xl bg-slate-950/80 border border-purple-500/30 hover:border-purple-400/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_25px_rgba(168,85,247,0.2)] cursor-pointer group"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-950/80 text-purple-300 border border-purple-500/40">
+                            Full-Stack
+                          </span>
+                          <span className="text-xs font-mono font-black text-emerald-400">2.5 GEN</span>
+                        </div>
+                        <div className="text-sm font-bold text-slate-100 group-hover:text-purple-300 transition-colors">
+                          Web3 dApp Escrow Dashboard
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                          React 18 + Viem responsive client with optimistic consensus subscriptions.
+                        </p>
+                        <div className="mt-3 text-[11px] font-mono text-purple-300 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                          <span>⚡ Quick Launch</span>
+                          <span>→</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-center gap-3">
                     <button
                       onClick={() => {
@@ -1333,13 +1516,14 @@ export const App: React.FC = () => {
                         else setIsCreateOpen(true);
                       }}
                       disabled={isTxPending}
-                      className={`px-6 py-3 rounded-xl font-black text-xs shadow-xl transition-all duration-300 ${
+                      className={`px-7 py-3.5 rounded-xl font-black text-xs shadow-xl transition-all duration-300 flex items-center gap-2 ${
                         isTxPending
                           ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-50 shadow-none'
-                          : 'bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)] hover:scale-105 cursor-pointer'
+                          : 'bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 shadow-[0_0_25px_rgba(6,182,212,0.4)] hover:shadow-[0_0_35px_rgba(6,182,212,0.6)] hover:scale-105 cursor-pointer'
                       }`}
                     >
-                      Commission SLA Bounty
+                      <PlusCircle className="w-4 h-4" />
+                      <span>Commission Custom SLA Bounty</span>
                     </button>
                     {(selectedCategory !== 'ALL' || activeFilter !== 'ALL' || searchQuery) && (
                       <button
@@ -1348,7 +1532,7 @@ export const App: React.FC = () => {
                           setActiveFilter('ALL');
                           setSearchQuery('');
                         }}
-                        className="px-4 py-3 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 text-xs font-mono border border-slate-700 cursor-pointer transition-colors"
+                        className="px-4 py-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 text-xs font-mono border border-slate-700 cursor-pointer transition-colors"
                       >
                         Reset Filters
                       </button>
@@ -1455,9 +1639,13 @@ export const App: React.FC = () => {
       {/* Modals */}
       <CreateJob
         isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
+        onClose={() => {
+          setIsCreateOpen(false);
+          setPreloadedTemplate(null);
+        }}
         onSubmit={handleCreateJob}
         isLoading={isTxPending}
+        initialTemplate={preloadedTemplate}
       />
 
       <SubmitPR

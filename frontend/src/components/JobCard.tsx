@@ -90,6 +90,19 @@ export const JobCard: React.FC<JobCardProps> = ({
       {/* Top neon hairline accent */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-40 group-hover:opacity-100 transition-opacity" />
 
+      {/* Cyberpunk corner bracket accents */}
+      <div className="absolute top-0 left-0 w-2.5 h-2.5 border-t border-l border-cyan-400/40 group-hover:border-cyan-400 transition-colors" />
+      <div className="absolute top-0 right-0 w-2.5 h-2.5 border-t border-r border-cyan-400/40 group-hover:border-cyan-400 transition-colors" />
+      <div className="absolute bottom-0 left-0 w-2.5 h-2.5 border-b border-l border-cyan-400/40 group-hover:border-cyan-400 transition-colors" />
+      <div className="absolute bottom-0 right-0 w-2.5 h-2.5 border-b border-r border-cyan-400/40 group-hover:border-cyan-400 transition-colors" />
+
+      {/* Dynamic Laser Scanning Line when Adjudicating */}
+      {isAdjudicating && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
+          <div className="w-full h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-shimmer-track shadow-[0_0_20px_#06b6d4]" />
+        </div>
+      )}
+
       {/* Top row: Job ID, Category & Status Badge */}
       <div>
         <div className="flex items-center justify-between gap-2 mb-3">

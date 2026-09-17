@@ -6,6 +6,12 @@ interface CreateJobProps {
   onClose: () => void;
   onSubmit: (slaSpec: string, repoUrl: string, bountyGen: string, category: string) => Promise<void>;
   isLoading: boolean;
+  initialTemplate?: {
+    category?: string;
+    repo?: string;
+    bounty?: string;
+    spec?: string;
+  } | null;
 }
 
 const CATEGORIES = [
@@ -73,12 +79,22 @@ export const CreateJob: React.FC<CreateJobProps> = ({
   onClose,
   onSubmit,
   isLoading,
+  initialTemplate = null,
 }) => {
   const [category, setCategory] = useState('SMART_CONTRACT');
   const [repoUrl, setRepoUrl] = useState('');
   const [slaSpec, setSlaSpec] = useState('');
   const [bountyGen, setBountyGen] = useState('1.5');
   const [error, setError] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (initialTemplate) {
+      if (initialTemplate.category) setCategory(initialTemplate.category);
+      if (initialTemplate.repo) setRepoUrl(initialTemplate.repo);
+      if (initialTemplate.spec) setSlaSpec(initialTemplate.spec);
+      if (initialTemplate.bounty) setBountyGen(initialTemplate.bounty);
+    }
+  }, [initialTemplate, isOpen]);
 
   if (!isOpen) return null;
 

@@ -69,18 +69,28 @@ export const StatsBar: React.FC<StatsBarProps> = ({ jobs, totalEscrowLocked }) =
         return (
           <div
             key={s.label}
-            className={`rounded-2xl bg-slate-900/70 border border-slate-800/80 ${s.hoverBorder} p-4 flex items-center gap-3 sm:gap-4 group transition-all duration-200 hover:-translate-y-0.5 shadow-md backdrop-blur-md`}
+            className={`relative overflow-hidden rounded-2xl bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-slate-950/90 border border-slate-800/90 ${s.hoverBorder} p-4 flex items-center gap-3 sm:gap-4 group transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_-5px_rgba(6,182,212,0.15)] backdrop-blur-xl`}
           >
+            {/* Top neon hairline */}
+            <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent group-hover:via-cyan-400 transition-all duration-300" />
+            
+            {/* Cyberpunk corner bracket accents */}
+            <div className="absolute top-0 left-0 w-2.5 h-2.5 border-t border-l border-cyan-500/30 group-hover:border-cyan-400 transition-colors" />
+            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 border-b border-r border-cyan-500/30 group-hover:border-cyan-400 transition-colors" />
+
             <div
-              className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl ${s.iconBg} border ${s.iconBorder} flex items-center justify-center ${s.iconColor} shrink-0 group-hover:scale-105 transition-transform`}
+              className={`w-11 h-11 rounded-xl ${s.iconBg} border ${s.iconBorder} flex items-center justify-center ${s.iconColor} shrink-0 group-hover:scale-110 transition-all duration-300 shadow-inner`}
             >
               <Icon className="w-5 h-5" />
             </div>
             <div className="min-w-0 flex-1">
-              <span className="text-[11px] text-slate-400 font-medium block leading-tight">
-                {s.label}
-              </span>
-              <div className={`text-lg sm:text-xl font-bold font-mono ${s.valueTxt} leading-tight mt-0.5 truncate`}>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/80 animate-ping group-hover:bg-cyan-300" />
+                <span className="text-[11px] text-slate-400 font-medium truncate block leading-tight">
+                  {s.label}
+                </span>
+              </div>
+              <div className={`text-lg sm:text-xl font-black font-mono ${s.valueTxt} leading-tight mt-1 truncate tracking-tight`}>
                 {s.value}
                 {s.sub && (
                   <span className="text-[11px] text-slate-400 font-mono font-normal ml-1.5">
