@@ -416,3 +416,7 @@ Provide your evaluation as pure JSON with no markdown backticks or commentary:
             "total_appeals_processed": int(self.total_appeals_processed),
         }
         return json.dumps(data)
+
+
+# Backward-compatible alias
+Contract = AgentSLA
