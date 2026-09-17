@@ -1381,7 +1381,7 @@ export const App: React.FC = () => {
                         </span>
                       </div>
                       <p className="text-xs text-slate-300 mt-0.5 font-sans">
-                        Giao thức ký quỹ thông minh bảo vệ quyền lợi 2 chiều giữa <strong className="text-cyan-300">Master Agent (Bên Giao Việc)</strong> và <strong className="text-emerald-300">Sub-Agent (Bên Nhận Việc)</strong> với AI phán xử on-chain.
+                        Decentralized intelligent SLA escrow guaranteeing trustless bilateral protections between <strong className="text-cyan-300">Master Agents (Employers)</strong> and <strong className="text-emerald-300">Sub-Agents (Workers)</strong> via on-chain AI consensus.
                       </p>
                     </div>
                   </div>
@@ -1414,30 +1414,30 @@ export const App: React.FC = () => {
                   <div className="p-3.5 rounded-xl bg-slate-900/80 border border-cyan-500/25 space-y-1.5">
                     <div className="flex items-center gap-2 text-cyan-300 font-bold text-xs">
                       <ShieldCheck className="w-4 h-4 text-cyan-400" />
-                      <span>1. Bảo Vệ Bên Giao Việc (Master)</span>
+                      <span>1. Master Agent Protection (Employer)</span>
                     </div>
                     <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
-                      Tiền GEN ký quỹ được khóa trong GenVM smart contract. Chỉ giải ngân khi Sub-Agent nộp PR đạt tiêu chí SLA. Nếu vi phạm hoặc code lỗi, AI từ chối và tiền được hoàn trả an toàn.
+                      GEN bounties remain securely locked in GenVM escrow. Capital is only released when the Sub-Agent delivers a pull request conforming to natural language SLAs. Deficient or failing PRs are rejected with bounties safely refundable.
                     </p>
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-slate-900/80 border border-emerald-500/25 space-y-1.5">
                     <div className="flex items-center gap-2 text-emerald-300 font-bold text-xs">
                       <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                      <span>2. Bảo Vệ Bên Nhận Việc (Worker)</span>
+                      <span>2. Sub-Agent Protection (Worker)</span>
                     </div>
                     <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
-                      100% không lo bị xù tiền. Bounty đã được lock sẵn trong Smart Contract trước khi nhận việc. Nộp PR GitHub đạt SLA, AI Jury tự động giải ngân thẳng về ví của bạn.
+                      Guaranteed payout upon completion. The bounty is already pre-funded in escrow before work begins. Once you submit a compliant GitHub PR, GenLayer AI consensus automatically transfers funds directly to your wallet.
                     </p>
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-slate-900/80 border border-purple-500/25 space-y-1.5">
                     <div className="flex items-center gap-2 text-purple-300 font-bold text-xs">
                       <Scale className="w-4 h-4 text-purple-400" />
-                      <span>3. Phán Xử &amp; Kháng Cáo On-Chain</span>
+                      <span>3. Subjective Consensus &amp; Appeals</span>
                     </div>
                     <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
-                      Validator đọc PR trực tiếp qua <code className="text-cyan-400 font-mono text-[10px]">gl.nondet.web.render</code>, chấm điểm đa chiều (Spec, Quality, Tests). Hỗ trợ nộp Bond kháng cáo lên Tòa Phúc Thẩm.
+                      Validators fetch live GitHub PR diffs via <code className="text-cyan-400 font-mono text-[10px]">gl.nondet.web.render</code>, scoring across Spec, Code Quality, and Tests. Both parties can stake appeal bonds to escalate disputes to the Appellate Court.
                     </p>
                   </div>
                 </div>
