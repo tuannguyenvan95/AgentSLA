@@ -126,9 +126,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="font-black text-lg tracking-tight bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(6,182,212,0.3)]">
                   AgentSLA
                 </span>
-                <span className="px-2 py-0.5 text-[10px] font-mono uppercase bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 rounded-full font-bold shadow-[0_0_10px_rgba(6,182,212,0.2)] flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  studio-next (61997)
+                <span className="px-2 py-0.5 text-[10px] font-mono uppercase bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 rounded-full font-bold shadow-[0_0_10px_rgba(6,182,212,0.2)]">
+                  Protocol
                 </span>
               </div>
               <p className="text-[10px] text-slate-400 -mt-0.5 font-medium hidden sm:block tracking-wide">

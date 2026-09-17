@@ -1075,34 +1075,28 @@ export const App: React.FC = () => {
                   </div>
 
                   {/* Right Column: Visual Autonomous Protocol Pipeline Card */}
-                  <div className="lg:col-span-5 bg-slate-950/80 border border-slate-800/90 hover:border-cyan-500/40 rounded-2xl p-5 shadow-2xl backdrop-blur-md relative overflow-hidden transition-all duration-300">
-                    {/* Top ambient highlight */}
-                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-500 via-purple-500 to-emerald-500 opacity-60" />
-                    
+                  <div className="lg:col-span-5 bg-slate-950/80 border border-slate-800/90 rounded-2xl p-5 shadow-xl backdrop-blur-md relative overflow-hidden">
                     <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-800/80">
                       <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                         <span className="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
                           SLA Execution Pipeline
                         </span>
                       </div>
-                      <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 shadow-[0_0_10px_rgba(6,182,212,0.2)]">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-500/40">
                         On-Chain AI
                       </span>
                     </div>
 
-                    {/* 4 Pipeline Stages with Connected Flow */}
-                    <div className="relative space-y-3">
-                      {/* Vertical connector line */}
-                      <div className="absolute left-[19px] top-4 bottom-4 w-[2px] bg-gradient-to-b from-cyan-500/50 via-purple-500/50 to-emerald-500/50 pointer-events-none" />
-
+                    {/* 4 Pipeline Stages */}
+                    <div className="space-y-2.5">
                       {/* Stage 1 */}
-                      <div className="relative flex items-start gap-3.5 p-3 rounded-xl bg-slate-900/70 border border-slate-800/80 hover:border-cyan-500/50 hover:bg-slate-900/90 transition-all duration-200 hover:translate-x-1 group">
-                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-950 to-slate-900 text-cyan-400 border border-cyan-500/50 flex items-center justify-center shrink-0 text-xs font-mono font-black mt-0.5 shadow-[0_0_10px_rgba(6,182,212,0.3)] group-hover:scale-110 transition-transform">
-                          1
+                      <div className="flex items-center gap-3.5 p-3 rounded-xl bg-slate-900/70 border border-slate-800/80 hover:border-cyan-500/40 transition-all duration-200">
+                        <div className="w-8 h-8 rounded-xl bg-cyan-950 text-cyan-400 border border-cyan-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold">
+                          01
                         </div>
-                        <div className="text-xs min-w-0">
-                          <div className="font-bold text-slate-200 group-hover:text-cyan-300 transition-colors">1. Escrow Locked</div>
+                        <div className="text-xs min-w-0 flex-1">
+                          <div className="font-semibold text-slate-200">Escrow Locked</div>
                           <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
                             Master Agent locks GEN bounty in Intelligent Contract.
                           </div>
@@ -1110,12 +1104,12 @@ export const App: React.FC = () => {
                       </div>
 
                       {/* Stage 2 */}
-                      <div className="relative flex items-start gap-3.5 p-3 rounded-xl bg-slate-900/70 border border-slate-800/80 hover:border-amber-500/50 hover:bg-slate-900/90 transition-all duration-200 hover:translate-x-1 group">
-                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-950 to-slate-900 text-amber-400 border border-amber-500/50 flex items-center justify-center shrink-0 text-xs font-mono font-black mt-0.5 shadow-[0_0_10px_rgba(245,158,11,0.3)] group-hover:scale-110 transition-transform">
-                          2
+                      <div className="flex items-center gap-3.5 p-3 rounded-xl bg-slate-900/70 border border-slate-800/80 hover:border-amber-500/40 transition-all duration-200">
+                        <div className="w-8 h-8 rounded-xl bg-amber-950 text-amber-400 border border-amber-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold">
+                          02
                         </div>
-                        <div className="text-xs min-w-0">
-                          <div className="font-bold text-slate-200 group-hover:text-amber-300 transition-colors">2. Deliverable PR</div>
+                        <div className="text-xs min-w-0 flex-1">
+                          <div className="font-semibold text-slate-200">Deliverable PR</div>
                           <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
                             Sub-Agent submits verifiable GitHub Pull Request diff.
                           </div>
@@ -1123,12 +1117,12 @@ export const App: React.FC = () => {
                       </div>
 
                       {/* Stage 3 */}
-                      <div className="relative flex items-start gap-3.5 p-3 rounded-xl bg-slate-900/70 border border-slate-800/80 hover:border-purple-500/50 hover:bg-slate-900/90 transition-all duration-200 hover:translate-x-1 group">
-                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-950 to-slate-900 text-purple-300 border border-purple-500/50 flex items-center justify-center shrink-0 text-xs font-mono font-black mt-0.5 shadow-[0_0_10px_rgba(168,85,247,0.3)] group-hover:scale-110 transition-transform">
-                          3
+                      <div className="flex items-center gap-3.5 p-3 rounded-xl bg-slate-900/70 border border-slate-800/80 hover:border-purple-500/40 transition-all duration-200">
+                        <div className="w-8 h-8 rounded-xl bg-purple-950 text-purple-300 border border-purple-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold">
+                          03
                         </div>
-                        <div className="text-xs min-w-0">
-                          <div className="font-bold text-slate-200 group-hover:text-purple-300 transition-colors">3. AI Jury Consensus</div>
+                        <div className="text-xs min-w-0 flex-1">
+                          <div className="font-semibold text-slate-200">AI Jury Consensus</div>
                           <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
                             Validators render code & reach subjective consensus.
                           </div>
@@ -1136,12 +1130,12 @@ export const App: React.FC = () => {
                       </div>
 
                       {/* Stage 4 */}
-                      <div className="relative flex items-start gap-3.5 p-3 rounded-xl bg-slate-900/70 border border-slate-800/80 hover:border-emerald-500/50 hover:bg-slate-900/90 transition-all duration-200 hover:translate-x-1 group">
-                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-950 to-slate-900 text-emerald-400 border border-emerald-500/50 flex items-center justify-center shrink-0 text-xs font-mono font-black mt-0.5 shadow-[0_0_10px_rgba(16,185,129,0.3)] group-hover:scale-110 transition-transform">
-                          4
+                      <div className="flex items-center gap-3.5 p-3 rounded-xl bg-slate-900/70 border border-slate-800/80 hover:border-emerald-500/40 transition-all duration-200">
+                        <div className="w-8 h-8 rounded-xl bg-emerald-950 text-emerald-400 border border-emerald-500/40 flex items-center justify-center shrink-0 text-xs font-mono font-bold">
+                          04
                         </div>
-                        <div className="text-xs min-w-0">
-                          <div className="font-bold text-slate-200 group-hover:text-emerald-300 transition-colors">4. Settlement & Appeal</div>
+                        <div className="text-xs min-w-0 flex-1">
+                          <div className="font-semibold text-slate-200">Settlement & Appeal</div>
                           <div className="text-slate-400 text-[11px] leading-tight mt-0.5">
                             Automatic bounty release or decentralized appeal court.
                           </div>

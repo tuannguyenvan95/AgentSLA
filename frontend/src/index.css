@@ -27,14 +27,14 @@
   background: #06b6d4;
 }
 
-/* Futuristic Ambient Background Grid */
+/* Futuristic Ambient Background Grid (ultra-subtle, non-distracting) */
 .cyber-grid-bg {
-  background-size: 36px 36px;
+  background-size: 48px 48px;
   background-image: 
-    linear-gradient(to right, rgba(6, 182, 212, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(6, 182, 212, 0.04) 1px, transparent 1px);
-  mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 70%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 70%, transparent 100%);
+    linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse 70% 45% at 50% 15%, black 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 45% at 50% 15%, black 40%, transparent 100%);
 }
 
 /* Glowing Neon Shadows */
