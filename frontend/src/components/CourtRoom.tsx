@@ -1,4 +1,5 @@
 import React from 'react';
+import { NavTab } from './Navbar';
 import { 
   Scale, 
   Gavel, 
@@ -6,16 +7,28 @@ import {
   FileText, 
   CheckCircle2, 
   XCircle, 
-  Cpu
+  Cpu,
+  PlusCircle, 
+  LayoutGrid, 
+  Briefcase, 
+  BarChart3, 
+  BookOpen
 } from 'lucide-react';
 import { Job, formatAddress, formatGEN, getCategoryInfo, getScoreGrade } from '../utils/helpers';
 
 interface CourtRoomProps {
   jobs: Job[];
   onInspectCase: (job: Job) => void;
+  onSelectTab: (tab: NavTab) => void;
+  onCommissionClick: () => void;
 }
 
-export const CourtRoom: React.FC<CourtRoomProps> = ({ jobs, onInspectCase }) => {
+export const CourtRoom: React.FC<CourtRoomProps> = ({ 
+  jobs, 
+  onInspectCase, 
+  onSelectTab, 
+  onCommissionClick 
+}) => {
   const inReviewCases = jobs.filter((j) => j.status === 1);
   const inAppealCases = jobs.filter((j) => j.status === 5);
   const resolvedCases = jobs.filter((j) => j.status === 2 || j.status === 3);
@@ -29,6 +42,48 @@ export const CourtRoom: React.FC<CourtRoomProps> = ({ jobs, onInspectCase }) => 
 
   return (
     <div className="space-y-8">
+      {/* Top Cross-Navigation Navigation Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-2 rounded-2xl bg-slate-950/80 border border-slate-800 shadow-md">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => onSelectTab('MARKETPLACE')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-slate-900 hover:bg-cyan-950/60 text-slate-300 hover:text-cyan-300 border border-slate-800 hover:border-cyan-500/40 transition-all cursor-pointer"
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+            <span>Marketplace</span>
+          </button>
+          <button
+            onClick={() => onSelectTab('MY_CONTRACTS')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-slate-900 hover:bg-cyan-950/60 text-slate-300 hover:text-cyan-300 border border-slate-800 hover:border-cyan-500/40 transition-all cursor-pointer"
+          >
+            <Briefcase className="w-3.5 h-3.5" />
+            <span>My Contracts</span>
+          </button>
+          <button
+            onClick={() => onSelectTab('ANALYTICS')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-slate-900 hover:bg-cyan-950/60 text-slate-300 hover:text-cyan-300 border border-slate-800 hover:border-cyan-500/40 transition-all cursor-pointer"
+          >
+            <BarChart3 className="w-3.5 h-3.5" />
+            <span>Protocol Analytics</span>
+          </button>
+          <button
+            onClick={() => onSelectTab('DOCS')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-slate-900 hover:bg-cyan-950/60 text-slate-300 hover:text-cyan-300 border border-slate-800 hover:border-cyan-500/40 transition-all cursor-pointer"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Architecture Docs</span>
+          </button>
+        </div>
+
+        <button
+          onClick={onCommissionClick}
+          className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold font-mono bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:shadow-[0_0_20px_rgba(168,85,247,0.5)] transition-all cursor-pointer"
+        >
+          <PlusCircle className="w-3.5 h-3.5" />
+          <span>+ Commission SLA Task</span>
+        </button>
+      </div>
+
       {/* Court Room Header Banner */}
       <div className="relative rounded-2xl bg-gradient-to-r from-purple-950/60 via-slate-900 to-slate-900 border border-purple-500/30 p-6 sm:p-8 overflow-hidden">
         <div className="absolute right-0 top-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -124,11 +179,28 @@ export const CourtRoom: React.FC<CourtRoomProps> = ({ jobs, onInspectCase }) => 
         </div>
 
         {inReviewCases.length === 0 ? (
-          <div className="p-8 rounded-2xl border border-dashed border-slate-800 bg-slate-900/30 text-center">
-            <CheckCircle2 className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-            <span className="text-xs text-slate-400 font-mono">
-              The court docket is clear. No deliverables are currently awaiting review.
-            </span>
+          <div className="p-8 rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 text-center space-y-3">
+            <CheckCircle2 className="w-8 h-8 text-emerald-400/80 mx-auto" />
+            <div className="text-sm font-bold text-slate-200">
+              The Adjudication Docket is Clear
+            </div>
+            <p className="text-xs text-slate-400 font-mono max-w-md mx-auto">
+              No deliverables are currently awaiting review. Deliverables submitted in the Marketplace will be queued here for on-chain AI consensus scoring.
+            </p>
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                onClick={() => onSelectTab('MARKETPLACE')}
+                className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 font-mono text-xs font-semibold transition-all cursor-pointer"
+              >
+                Browse Marketplace Tasks →
+              </button>
+              <button
+                onClick={onCommissionClick}
+                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white font-mono text-xs font-bold transition-all shadow-sm cursor-pointer"
+              >
+                + Commission SLA Task
+              </button>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

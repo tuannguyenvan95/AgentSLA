@@ -1,13 +1,31 @@
 import React from 'react';
-import { BarChart3, TrendingUp, ShieldCheck, Activity } from 'lucide-react';
+import { NavTab } from './Navbar';
+import { 
+  BarChart3, 
+  TrendingUp, 
+  ShieldCheck, 
+  Activity, 
+  LayoutGrid, 
+  Briefcase, 
+  Scale, 
+  BookOpen, 
+  PlusCircle 
+} from 'lucide-react';
 import { Job, formatGEN } from '../utils/helpers';
 
 interface AnalyticsViewProps {
   jobs: Job[];
   totalEscrowLocked: string;
+  onSelectTab: (tab: NavTab) => void;
+  onCommissionClick: () => void;
 }
 
-export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ jobs, totalEscrowLocked }) => {
+export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ 
+  jobs, 
+  totalEscrowLocked, 
+  onSelectTab, 
+  onCommissionClick 
+}) => {
   const totalJobs = jobs.length;
   const approved = jobs.filter((j) => j.status === 2).length;
   const rejected = jobs.filter((j) => j.status === 3).length;
@@ -26,6 +44,48 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ jobs, totalEscrowL
 
   return (
     <div className="space-y-8">
+      {/* Top Cross-Navigation Navigation Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-2 rounded-2xl bg-slate-950/80 border border-slate-800 shadow-md">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => onSelectTab('MARKETPLACE')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-slate-900 hover:bg-emerald-950/60 text-slate-300 hover:text-emerald-300 border border-slate-800 hover:border-emerald-500/40 transition-all cursor-pointer"
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+            <span>Marketplace</span>
+          </button>
+          <button
+            onClick={() => onSelectTab('MY_CONTRACTS')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-slate-900 hover:bg-emerald-950/60 text-slate-300 hover:text-emerald-300 border border-slate-800 hover:border-emerald-500/40 transition-all cursor-pointer"
+          >
+            <Briefcase className="w-3.5 h-3.5" />
+            <span>My Contracts</span>
+          </button>
+          <button
+            onClick={() => onSelectTab('COURT_ROOM')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-slate-900 hover:bg-emerald-950/60 text-slate-300 hover:text-emerald-300 border border-slate-800 hover:border-emerald-500/40 transition-all cursor-pointer"
+          >
+            <Scale className="w-3.5 h-3.5" />
+            <span>AI Jury Court</span>
+          </button>
+          <button
+            onClick={() => onSelectTab('DOCS')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-slate-900 hover:bg-emerald-950/60 text-slate-300 hover:text-emerald-300 border border-slate-800 hover:border-emerald-500/40 transition-all cursor-pointer"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Architecture Docs</span>
+          </button>
+        </div>
+
+        <button
+          onClick={onCommissionClick}
+          className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold font-mono bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all cursor-pointer"
+        >
+          <PlusCircle className="w-3.5 h-3.5" />
+          <span>+ Commission SLA Task</span>
+        </button>
+      </div>
+
       {/* Header */}
       <div className="rounded-2xl bg-gradient-to-r from-emerald-950/50 via-slate-900 to-slate-900 border border-emerald-500/30 p-6 sm:p-8">
         <div className="max-w-2xl">
@@ -191,6 +251,39 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ jobs, totalEscrowL
               <span className="font-mono text-purple-300 font-bold">100% Finality</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Cross-Tab Action & Conversion Banner */}
+      <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
+        <div>
+          <h4 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+            <span>Ready to Deploy Autonomous SLAs or Inspect Jury Proofs?</span>
+          </h4>
+          <p className="text-xs text-slate-400 mt-1 max-w-xl">
+            Explore live tasks in the Marketplace, test 1-Click Launch templates, or review on-chain LLM consensus traces in the AI Jury Court.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <button
+            onClick={() => onSelectTab('MARKETPLACE')}
+            className="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-slate-800 hover:bg-slate-700 text-cyan-400 transition-colors cursor-pointer"
+          >
+            Explore Marketplace →
+          </button>
+          <button
+            onClick={() => onSelectTab('COURT_ROOM')}
+            className="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-purple-950/80 hover:bg-purple-900/80 text-purple-300 border border-purple-500/40 transition-colors cursor-pointer"
+          >
+            AI Jury Court →
+          </button>
+          <button
+            onClick={onCommissionClick}
+            className="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 shadow-md hover:scale-105 transition-transform cursor-pointer"
+          >
+            + Commission Task
+          </button>
         </div>
       </div>
     </div>

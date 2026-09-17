@@ -216,8 +216,8 @@ export const App: React.FC = () => {
     setSuccessMsg('Wallet disconnected.');
   };
 
-  // Fetch all jobs from the Intelligent Contract (with SWR caching & rate-limit resilience)
-  const fetchOnChainData = useCallback(async () => {
+  // Fetch all jobs from the Intelligent Contract (with SWR caching, zero-flicker silent background sync)
+  const fetchOnChainData = useCallback(async (isSilent: boolean = false) => {
     if (!contractAddress || contractAddress === '0x0000000000000000000000000000000000000000') {
       setJobs([]);
       setTotalEscrowLocked('0');
@@ -229,7 +229,16 @@ export const App: React.FC = () => {
       return;
     }
 
-    setIsLoading(true);
+    // Zero-flicker: Only trigger full-screen loading spinner on manual cold-start when job cache is empty
+    if (!isSilent) {
+      setJobs((prev) => {
+        if (prev.length === 0) {
+          setIsLoading(true);
+        }
+        return prev;
+      });
+    }
+
     try {
       let statsTotalJobs: number | null = null;
 
@@ -278,10 +287,17 @@ export const App: React.FC = () => {
 
       // If contract legitimately has 0 jobs
       if (totalCount === 0) {
-        setJobs([]);
-        try {
-          localStorage.removeItem(`agentsla_cached_jobs_${contractAddress}`);
-        } catch {}
+        setJobs((prev) => {
+          // Preserve optimistic pending jobs if any are currently broadcasting!
+          const pendingOptimisticJobs = prev.filter((j) => j.created_at_block?.includes('Pending'));
+          if (pendingOptimisticJobs.length > 0) {
+            return pendingOptimisticJobs;
+          }
+          try {
+            localStorage.removeItem(`agentsla_cached_jobs_${contractAddress}`);
+          } catch {}
+          return [];
+        });
         return;
       }
 
@@ -301,7 +317,7 @@ export const App: React.FC = () => {
             const existingJob = currentCacheMap.get(expectedId);
 
             // Optimization: If a job is already in terminal resolved state (APPROVED/REJECTED/CANCELLED),
-            // its on-chain data is immutable unless an appeal occurs. Reusing it saves 2 RPC calls per cycle!
+            // its on-chain data is immutable unless an appeal occurs. Reusing it saves RPC calls!
             if (existingJob && (existingJob.status === 2 || existingJob.status === 3 || existingJob.status === 4)) {
               return existingJob;
             }
@@ -332,8 +348,15 @@ export const App: React.FC = () => {
       const validJobs = results.filter((j): j is Job => j !== null);
 
       if (validJobs.length > 0) {
-        setJobs(() => {
-          const sorted = [...validJobs].sort((a, b) => {
+        setJobs((prev) => {
+          // Merge on-chain confirmed jobs with any optimistic pending jobs from prev that aren't finalized yet
+          const finalizedIds = new Set(validJobs.map((j) => j.job_id));
+          const pendingOptimisticJobs = prev.filter(
+            (j) => !finalizedIds.has(j.job_id) && j.created_at_block?.includes('Pending')
+          );
+          const combined = [...validJobs, ...pendingOptimisticJobs];
+
+          const sorted = combined.sort((a, b) => {
             const numA = parseInt(a.job_id.replace('sla-', ''), 10) || 0;
             const numB = parseInt(b.job_id.replace('sla-', ''), 10) || 0;
             return numB - numA;
@@ -345,10 +368,14 @@ export const App: React.FC = () => {
           return sorted;
         });
       } else if (totalCount === 0) {
-        setJobs([]);
-        try {
-          localStorage.removeItem(`agentsla_cached_jobs_${contractAddress}`);
-        } catch {}
+        setJobs((prev) => {
+          const pendingOptimisticJobs = prev.filter((j) => j.created_at_block?.includes('Pending'));
+          if (pendingOptimisticJobs.length > 0) return pendingOptimisticJobs;
+          try {
+            localStorage.removeItem(`agentsla_cached_jobs_${contractAddress}`);
+          } catch {}
+          return [];
+        });
       }
     } catch (err: any) {
       console.warn('Transient error in fetchOnChainData:', err);
@@ -407,23 +434,23 @@ export const App: React.FC = () => {
     }
   }, []);
 
-  // Fetch on-chain data on load and when dependencies change
+  // Fetch on-chain data on load and when dependencies change (cold load: show initial spinner only if empty)
   useEffect(() => {
-    fetchOnChainData();
+    fetchOnChainData(false);
   }, [fetchOnChainData]);
 
-  // Auto-refresh interval (with visibility awareness to respect RPC rate limits)
+  // Auto-refresh interval (100% silent in background — never triggers loading spinner or UI flicker)
   useEffect(() => {
     const interval = setInterval(() => {
       if (typeof document === 'undefined' || document.visibilityState === 'visible') {
-        fetchOnChainData();
+        fetchOnChainData(true);
         if (account) fetchBalance(account);
       }
-    }, 30000);
+    }, 25000);
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        fetchOnChainData();
+        fetchOnChainData(true);
         if (account) fetchBalance(account);
       }
     };
@@ -470,33 +497,86 @@ export const App: React.FC = () => {
       });
       setLatestTxHash(hash);
       setPendingTx({ action: 'create', statusText: 'Locking Escrow on Studionet...' });
-      setSuccessMsg('Transaction broadcasted! Awaiting FINALIZED block on GenLayer Studionet...');
 
-      // Close modal immediately once user confirms in MetaMask so they are never trapped in the modal
+      // Close modal immediately once user confirms in MetaMask
       setIsCreateOpen(false);
+
+      // --- OPTIMISTIC TASK INJECTION ---
+      // Instantly inject the task so the user sees it immediately on screen!
+      let nextIdNum = 1;
+      jobs.forEach((j) => {
+        const n = parseInt(j.job_id.replace('sla-', ''), 10);
+        if (!isNaN(n) && n >= nextIdNum) nextIdNum = n + 1;
+      });
+      const optimisticJobId = `sla-${nextIdNum}`;
+
+      const optimisticJob: Job = {
+        job_id: optimisticJobId,
+        creator: account,
+        worker: '0x0000000000000000000000000000000000000000',
+        bounty_amount: weiAmount.toString(),
+        appeal_bond: '0',
+        category: category,
+        repo_url: repoUrl,
+        sla_spec: slaSpec,
+        pr_url: '',
+        status: 0, // 0 = OPEN
+        verdict: 'PENDING',
+        reason: 'Awaiting sub-agent claiming & deliverable PR submission',
+        confidence: 0,
+        spec_score: 0,
+        quality_score: 0,
+        test_score: 0,
+        appeal_count: 0,
+        created_at_block: 'Confirming (Pending Block)...',
+        attempts: 0,
+      };
+
+      setJobs((prev) => {
+        const updated = [optimisticJob, ...prev.filter((j) => j.job_id !== optimisticJobId)];
+        try {
+          localStorage.setItem(`agentsla_cached_jobs_${contractAddress}`, JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+
+      setTotalEscrowLocked((prev) => {
+        try {
+          const current = BigInt(prev || '0');
+          const next = (current + weiAmount).toString();
+          localStorage.setItem(`agentsla_cached_escrow_${contractAddress}`, next);
+          return next;
+        } catch {
+          return prev;
+        }
+      });
+
+      setSuccessMsg(`SLA Task ${optimisticJobId} broadcasted! Escrow locked & added to docket.`);
 
       try {
         const receipt = await client.waitForTransactionReceipt({
           hash: hash as any,
           status: TransactionStatus.FINALIZED,
           interval: 2000,
-          retries: 120,
+          retries: 45,
         });
 
         if (!isTxSuccessful(receipt)) {
           throw new Error(`Transaction reverted: expected FINISHED_WITH_RETURN, got ${receipt?.txExecutionResultName || 'EXECUTION_FAILURE'}`);
         }
 
-        setSuccessMsg(`SLA Job created & Escrow locked successfully! (Tx: ${hash.slice(0, 10)}...)`);
+        setSuccessMsg(`SLA Task ${optimisticJobId} finalized on-chain! Escrow locked on GenLayer.`);
       } catch (receiptErr: any) {
         console.warn('Receipt check warning, verifying on-chain data directly:', receiptErr);
-        // Resilient fallback: Even if receipt polling timed out or encountered transient network error,
-        // transaction was broadcasted; update user with progress
-        setSuccessMsg(`Transaction broadcasted (Tx: ${hash.slice(0, 10)}...). Finalizing block on-chain...`);
+        setSuccessMsg(`Transaction broadcasted (Tx: ${hash.slice(0, 10)}...). Synchronizing block on-chain...`);
       }
 
-      await fetchOnChainData();
-      await fetchBalance(account);
+      // Retry polling to smoothly reconcile with validator state
+      for (let attempt = 0; attempt < 6; attempt++) {
+        await new Promise((r) => setTimeout(r, 2000));
+        await fetchOnChainData(true);
+      }
+      if (account) await fetchBalance(account);
     } catch (txErr: any) {
       if (txErr?.code === 4001 || txErr?.message?.includes('User rejected')) {
         throw new Error('Transaction was cancelled in your wallet extension.');
@@ -920,14 +1000,21 @@ export const App: React.FC = () => {
           <CourtRoom
             jobs={jobs}
             onInspectCase={(j) => setSelectedJobForJury(j)}
+            onSelectTab={setActiveNavTab}
+            onCommissionClick={() => setIsCreateOpen(true)}
           />
         ) : activeNavTab === 'ANALYTICS' ? (
           <AnalyticsView
             jobs={jobs}
             totalEscrowLocked={totalEscrowLocked}
+            onSelectTab={setActiveNavTab}
+            onCommissionClick={() => setIsCreateOpen(true)}
           />
         ) : activeNavTab === 'DOCS' ? (
-          <DocsView />
+          <DocsView 
+            onSelectTab={setActiveNavTab}
+            onCommissionClick={() => setIsCreateOpen(true)}
+          />
         ) : (
           /* MARKETPLACE or MY_CONTRACTS */
           <div className="w-full">
@@ -1275,6 +1362,88 @@ export const App: React.FC = () => {
               </div>
             )}
 
+            {/* PROJECT INFORMATION & PROTOCOL OVERVIEW GUIDE (Task 2 & Task 4) */}
+            {activeNavTab === 'MARKETPLACE' && (
+              <div className="mb-6 rounded-2xl bg-gradient-to-r from-slate-950 via-[#0a1122] to-slate-950 border border-cyan-500/30 p-5 sm:p-6 shadow-xl backdrop-blur-xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-80" />
+                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-950/90 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shrink-0 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                      <Scale className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                          AgentSLA Protocol — Autonomous AI-to-AI Escrow &amp; SLA Enforcement
+                        </h3>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-cyan-950 text-cyan-300 border border-cyan-500/40">
+                          GenLayer Studio Next (61997)
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-300 mt-0.5 font-sans">
+                        Giao thức ký quỹ thông minh bảo vệ quyền lợi 2 chiều giữa <strong className="text-cyan-300">Master Agent (Bên Giao Việc)</strong> và <strong className="text-emerald-300">Sub-Agent (Bên Nhận Việc)</strong> với AI phán xử on-chain.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Cross-Tab Navigation Pills */}
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => setActiveNavTab('COURT_ROOM')}
+                      className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-purple-950/80 hover:bg-purple-900/80 text-purple-300 border border-purple-500/40 transition-all cursor-pointer flex items-center gap-1 hover:scale-105"
+                    >
+                      <span>🏛️ AI Jury Court</span>
+                    </button>
+                    <button
+                      onClick={() => setActiveNavTab('ANALYTICS')}
+                      className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-emerald-950/80 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-500/40 transition-all cursor-pointer flex items-center gap-1 hover:scale-105"
+                    >
+                      <span>📊 Analytics</span>
+                    </button>
+                    <button
+                      onClick={() => setActiveNavTab('DOCS')}
+                      className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-amber-950/80 hover:bg-amber-900/80 text-amber-300 border border-amber-500/40 transition-all cursor-pointer flex items-center gap-1 hover:scale-105"
+                    >
+                      <span>📖 Architecture</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 3 Protection Pillars */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-4">
+                  <div className="p-3.5 rounded-xl bg-slate-900/80 border border-cyan-500/25 space-y-1.5">
+                    <div className="flex items-center gap-2 text-cyan-300 font-bold text-xs">
+                      <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                      <span>1. Bảo Vệ Bên Giao Việc (Master)</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
+                      Tiền GEN ký quỹ được khóa trong GenVM smart contract. Chỉ giải ngân khi Sub-Agent nộp PR đạt tiêu chí SLA. Nếu vi phạm hoặc code lỗi, AI từ chối và tiền được hoàn trả an toàn.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-slate-900/80 border border-emerald-500/25 space-y-1.5">
+                    <div className="flex items-center gap-2 text-emerald-300 font-bold text-xs">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <span>2. Bảo Vệ Bên Nhận Việc (Worker)</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
+                      100% không lo bị xù tiền. Bounty đã được lock sẵn trong Smart Contract trước khi nhận việc. Nộp PR GitHub đạt SLA, AI Jury tự động giải ngân thẳng về ví của bạn.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-slate-900/80 border border-purple-500/25 space-y-1.5">
+                    <div className="flex items-center gap-2 text-purple-300 font-bold text-xs">
+                      <Scale className="w-4 h-4 text-purple-400" />
+                      <span>3. Phán Xử &amp; Kháng Cáo On-Chain</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
+                      Validator đọc PR trực tiếp qua <code className="text-cyan-400 font-mono text-[10px]">gl.nondet.web.render</code>, chấm điểm đa chiều (Spec, Quality, Tests). Hỗ trợ nộp Bond kháng cáo lên Tòa Phúc Thẩm.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Aggregated On-Chain Stats Bar */}
             <StatsBar jobs={jobs} totalEscrowLocked={totalEscrowLocked} />
 
@@ -1525,6 +1694,14 @@ export const App: React.FC = () => {
                       <PlusCircle className="w-4 h-4" />
                       <span>Commission Custom SLA Bounty</span>
                     </button>
+                    {activeNavTab === 'MY_CONTRACTS' && (
+                      <button
+                        onClick={() => setActiveNavTab('MARKETPLACE')}
+                        className="px-5 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 font-mono text-xs font-bold border border-slate-700 hover:border-cyan-500/50 cursor-pointer transition-all flex items-center gap-1.5"
+                      >
+                        <span>🛒 Browse Marketplace Tasks</span>
+                      </button>
+                    )}
                     {(selectedCategory !== 'ALL' || activeFilter !== 'ALL' || searchQuery) && (
                       <button
                         onClick={() => {

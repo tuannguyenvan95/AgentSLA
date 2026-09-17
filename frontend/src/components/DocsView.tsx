@@ -1,11 +1,70 @@
 import React from 'react';
-import { BookOpen, ShieldCheck, Terminal, ExternalLink, Scale, CheckCircle2 } from 'lucide-react';
+import { NavTab } from './Navbar';
+import { 
+  BookOpen, 
+  ShieldCheck, 
+  Terminal, 
+  ExternalLink, 
+  Scale, 
+  CheckCircle2, 
+  LayoutGrid, 
+  Briefcase, 
+  BarChart3, 
+  PlusCircle 
+} from 'lucide-react';
 import { AGENTSLA_CONTRACT_ADDRESS, STUDIONET_CONFIG } from '../config/genlayer';
 import { getExplorerUrl } from '../utils/helpers';
 
-export const DocsView: React.FC = () => {
+interface DocsViewProps {
+  onSelectTab: (tab: NavTab) => void;
+  onCommissionClick: () => void;
+}
+
+export const DocsView: React.FC<DocsViewProps> = ({ onSelectTab, onCommissionClick }) => {
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
+      {/* Top Cross-Navigation Navigation Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-2 rounded-2xl bg-slate-950/80 border border-slate-800 shadow-md">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => onSelectTab('MARKETPLACE')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-slate-900 hover:bg-amber-950/60 text-slate-300 hover:text-amber-300 border border-slate-800 hover:border-amber-500/40 transition-all cursor-pointer"
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+            <span>Marketplace</span>
+          </button>
+          <button
+            onClick={() => onSelectTab('MY_CONTRACTS')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-slate-900 hover:bg-amber-950/60 text-slate-300 hover:text-amber-300 border border-slate-800 hover:border-amber-500/40 transition-all cursor-pointer"
+          >
+            <Briefcase className="w-3.5 h-3.5" />
+            <span>My Contracts</span>
+          </button>
+          <button
+            onClick={() => onSelectTab('COURT_ROOM')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-slate-900 hover:bg-amber-950/60 text-slate-300 hover:text-amber-300 border border-slate-800 hover:border-amber-500/40 transition-all cursor-pointer"
+          >
+            <Scale className="w-3.5 h-3.5" />
+            <span>AI Jury Court</span>
+          </button>
+          <button
+            onClick={() => onSelectTab('ANALYTICS')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-slate-900 hover:bg-amber-950/60 text-slate-300 hover:text-amber-300 border border-slate-800 hover:border-amber-500/40 transition-all cursor-pointer"
+          >
+            <BarChart3 className="w-3.5 h-3.5" />
+            <span>Analytics</span>
+          </button>
+        </div>
+
+        <button
+          onClick={onCommissionClick}
+          className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold font-mono bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.3)] hover:shadow-[0_0_20px_rgba(245,158,11,0.5)] transition-all cursor-pointer"
+        >
+          <PlusCircle className="w-3.5 h-3.5" />
+          <span>+ Commission Task</span>
+        </button>
+      </div>
+
       {/* Header */}
       <div className="rounded-2xl bg-gradient-to-r from-amber-950/50 via-slate-900 to-slate-900 border border-amber-500/30 p-6 sm:p-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-950/80 border border-amber-500/40 text-amber-300 text-xs font-mono mb-3">
@@ -345,6 +404,39 @@ export const DocsView: React.FC = () => {
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Cross-Tab Action & Playground Footer */}
+      <div className="p-6 rounded-2xl bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 border border-amber-500/30 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
+        <div>
+          <h4 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+            <span>Ready to Experiment with On-Chain AI Adjudication?</span>
+          </h4>
+          <p className="text-xs text-slate-400 mt-1 max-w-xl">
+            Switch to the Marketplace to view active SLA tasks, inspect the AI Jury Court docket, or commission your first autonomous escrow.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <button
+            onClick={() => onSelectTab('MARKETPLACE')}
+            className="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-slate-800 hover:bg-slate-700 text-cyan-400 transition-colors cursor-pointer"
+          >
+            Launch Marketplace →
+          </button>
+          <button
+            onClick={() => onSelectTab('COURT_ROOM')}
+            className="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-purple-950/80 hover:bg-purple-900/80 text-purple-300 border border-purple-500/40 transition-colors cursor-pointer"
+          >
+            AI Jury Court →
+          </button>
+          <button
+            onClick={onCommissionClick}
+            className="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 shadow-md hover:scale-105 transition-transform cursor-pointer"
+          >
+            + Commission SLA Task
+          </button>
         </div>
       </div>
     </div>
