@@ -126,6 +126,9 @@ class AgentSLA(gl.contract.Contract):
         if job.status != gl.u8(0):
             raise gl.vm.UserError(f"Job {job_id} is not in OPEN status (current status: {int(job.status)}).")
 
+        if gl.message.sender_address == job.creator:
+            raise gl.vm.UserError("Master Agent cannot claim their own task.")
+
         cleaned_url = pr_url.strip()
         if not cleaned_url or not cleaned_url.startswith("http"):
             raise gl.vm.UserError("Valid GitHub Pull Request URL is required.")

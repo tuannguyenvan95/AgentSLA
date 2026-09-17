@@ -516,6 +516,11 @@ export const App: React.FC = () => {
       throw new Error('No valid Intelligent Contract configured.');
     }
 
+    const targetJob = jobs.find((j) => j.job_id === jobId);
+    if (targetJob && targetJob.creator.toLowerCase() === account.toLowerCase()) {
+      throw new Error('Master Agent (Creator) cannot claim their own task. Please switch to a Sub-Agent wallet.');
+    }
+
     setIsTxPending(true);
     setPendingTx({ jobId, action: 'claim', statusText: 'Awaiting MetaMask signature...' });
     setErrorMsg(null);
@@ -1413,6 +1418,7 @@ export const App: React.FC = () => {
         onClose={() => setSelectedJobForPR(null)}
         onSubmit={handleSubmitPR}
         isLoading={isTxPending}
+        currentAccount={account}
       />
 
       <JuryModal

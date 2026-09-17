@@ -63,6 +63,18 @@ def test_submit_deliverable_success(contract):
     assert job_data["status"] == 1  # IN_REVIEW
 
 
+def test_submit_deliverable_creator_cannot_claim_own_job(contract):
+    creator = Address("0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+    gl.message.sender = creator
+    gl.message.value = 1000000000000000000
+    job_id = contract.create_job(sla_spec="Build API endpoint", repo_url="https://github.com/org/repo")
+
+    # Creator attempts to claim their own job
+    gl.message.sender = creator
+    with pytest.raises(gl.UserError, match="Master Agent cannot claim their own task"):
+        contract.submit_deliverable(job_id=job_id, pr_url="https://github.com/org/repo/pull/1")
+
+
 def test_adjudicate_approved_with_multi_scores(contract, monkeypatch):
     creator = Address("0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
     worker = Address("0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")

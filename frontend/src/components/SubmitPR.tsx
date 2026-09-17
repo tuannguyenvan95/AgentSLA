@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { GitPullRequest, X, ShieldAlert, Loader2 } from 'lucide-react';
+import { GitPullRequest, X, ShieldAlert, AlertTriangle, Loader2 } from 'lucide-react';
 import { Job } from '../utils/helpers';
 
 interface SubmitPRProps {
@@ -8,6 +8,7 @@ interface SubmitPRProps {
   onClose: () => void;
   onSubmit: (jobId: string, prUrl: string) => Promise<void>;
   isLoading: boolean;
+  currentAccount?: string | null;
 }
 
 export const SubmitPR: React.FC<SubmitPRProps> = ({
@@ -16,11 +17,18 @@ export const SubmitPR: React.FC<SubmitPRProps> = ({
   onClose,
   onSubmit,
   isLoading,
+  currentAccount = null,
 }) => {
   const [prUrl, setPrUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen || !job) return null;
+
+  const isCreator = Boolean(
+    currentAccount &&
+    job &&
+    currentAccount.toLowerCase() === job.creator.toLowerCase()
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,6 +95,19 @@ export const SubmitPR: React.FC<SubmitPRProps> = ({
             </p>
           </div>
 
+          {/* Creator Warning Alert */}
+          {isCreator && (
+            <div className="p-3.5 rounded-xl bg-amber-950/60 border border-amber-500/50 text-amber-300 text-xs flex items-start gap-2.5">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
+              <div className="space-y-1">
+                <div className="font-bold text-amber-200">Master Agent (Task Creator) Detected</div>
+                <div className="text-[11px] text-amber-300/80 leading-relaxed">
+                  You created this SLA task. The AgentSLA protocol requires a separate Sub-Agent wallet to claim the task and submit deliverables to maintain trustless adjudication.
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Error */}
           {error && (
             <div className="p-3 rounded-lg bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
@@ -107,10 +128,10 @@ export const SubmitPR: React.FC<SubmitPRProps> = ({
             </button>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || isCreator}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-xs transition-all shadow-lg ${
-                isLoading
-                  ? 'bg-cyan-950/80 border border-cyan-500/50 text-cyan-300 cursor-not-allowed shadow-none'
+                isLoading || isCreator
+                  ? 'bg-slate-800 border border-slate-700 text-slate-500 cursor-not-allowed shadow-none'
                   : 'bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 shadow-cyan-500/20 active:translate-y-0.5 cursor-pointer'
               }`}
             >
@@ -119,6 +140,8 @@ export const SubmitPR: React.FC<SubmitPRProps> = ({
                   <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
                   <span>Submitting Deliverable & Claiming...</span>
                 </>
+              ) : isCreator ? (
+                <span>Cannot Claim Own Task</span>
               ) : (
                 <>
                   <GitPullRequest className="w-4 h-4" />
