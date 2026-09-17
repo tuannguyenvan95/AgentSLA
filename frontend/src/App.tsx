@@ -22,6 +22,7 @@ import {
   studioNext
 } from './config/genlayer';
 import { Job, toWeiGEN, formatGEN, getExplorerUrl } from './utils/helpers';
+import { sendGenLayerTransaction } from './utils/genlayerTransaction';
 import { Navbar, NavTab } from './components/Navbar';
 import { StatsBar } from './components/StatsBar';
 import { JobCard, PendingTxState } from './components/JobCard';
@@ -459,11 +460,12 @@ export const App: React.FC = () => {
     setErrorMsg(null);
     try {
       const weiAmount = toWeiGEN(bountyGen);
-      const hash = await client.writeContract({
-        address: contractAddress as `0x${string}`,
+      const hash = await sendGenLayerTransaction({
+        contractAddress,
         functionName: 'create_job',
         args: [slaSpec, repoUrl, category],
         value: weiAmount,
+        account,
       });
       setLatestTxHash(hash);
       setPendingTx({ action: 'create', statusText: 'Locking Escrow on Studionet...' });
@@ -474,7 +476,7 @@ export const App: React.FC = () => {
 
       try {
         const receipt = await client.waitForTransactionReceipt({
-          hash,
+          hash: hash as any,
           status: TransactionStatus.FINALIZED,
           interval: 2000,
           retries: 120,
@@ -518,11 +520,12 @@ export const App: React.FC = () => {
     setPendingTx({ jobId, action: 'claim', statusText: 'Awaiting MetaMask signature...' });
     setErrorMsg(null);
     try {
-      const hash = await client.writeContract({
-        address: contractAddress as `0x${string}`,
+      const hash = await sendGenLayerTransaction({
+        contractAddress,
         functionName: 'submit_deliverable',
         args: [jobId, prUrl],
-        value: BigInt(0),
+        value: 0n,
+        account,
       });
       setLatestTxHash(hash);
       setPendingTx({ jobId, action: 'claim', statusText: 'Submitting PR & Claiming on-chain...' });
@@ -533,7 +536,7 @@ export const App: React.FC = () => {
 
       try {
         const receipt = await client.waitForTransactionReceipt({
-          hash,
+          hash: hash as any,
           status: TransactionStatus.FINALIZED,
           interval: 2000,
           retries: 120,
@@ -577,18 +580,19 @@ export const App: React.FC = () => {
     setPendingTx({ jobId, action: 'adjudicate', statusText: 'Awaiting MetaMask signature...' });
     setErrorMsg(null);
     try {
-      const hash = await client.writeContract({
-        address: contractAddress as `0x${string}`,
+      const hash = await sendGenLayerTransaction({
+        contractAddress,
         functionName: 'adjudicate',
         args: [jobId],
-        value: BigInt(0),
+        value: 0n,
+        account,
       });
       setLatestTxHash(hash);
       setPendingTx({ jobId, action: 'adjudicate', statusText: 'AI Validator Consensus in progress...' });
       setSuccessMsg('Running AI consensus: Validator nodes are rendering GitHub PR directly on-chain...');
 
       const receipt = await client.waitForTransactionReceipt({
-        hash,
+        hash: hash as any,
         status: TransactionStatus.FINALIZED,
         interval: 2000,
         retries: 180,
@@ -628,18 +632,19 @@ export const App: React.FC = () => {
     setErrorMsg(null);
     try {
       const bondWei = toWeiGEN(bondGen);
-      const hash = await client.writeContract({
-        address: contractAddress as `0x${string}`,
+      const hash = await sendGenLayerTransaction({
+        contractAddress,
         functionName: 'appeal_adjudication',
         args: [jobId],
         value: bondWei,
+        account,
       });
       setLatestTxHash(hash);
       setPendingTx({ jobId, action: 'appeal', statusText: 'Filing appeal on-chain...' });
       setSuccessMsg('Submitting appeal transaction on-chain...');
 
       const receipt = await client.waitForTransactionReceipt({
-        hash,
+        hash: hash as any,
         status: TransactionStatus.FINALIZED,
         interval: 2000,
         retries: 120,
@@ -676,16 +681,17 @@ export const App: React.FC = () => {
     setPendingTx({ jobId, action: 'cancel', statusText: 'Awaiting MetaMask signature...' });
     setErrorMsg(null);
     try {
-      const hash = await client.writeContract({
-        address: contractAddress as `0x${string}`,
+      const hash = await sendGenLayerTransaction({
+        contractAddress,
         functionName: 'cancel_job',
         args: [jobId],
-        value: BigInt(0),
+        value: 0n,
+        account,
       });
       setLatestTxHash(hash);
       setPendingTx({ jobId, action: 'cancel', statusText: 'Refunding escrow on-chain...' });
       const receipt = await client.waitForTransactionReceipt({
-        hash,
+        hash: hash as any,
         status: TransactionStatus.FINALIZED,
         interval: 2000,
         retries: 120,
