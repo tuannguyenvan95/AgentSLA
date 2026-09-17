@@ -342,14 +342,19 @@ export const JobCard: React.FC<JobCardProps> = ({
           </div>
         )}
 
-        {/* Status: RESOLVED (APPROVED or REJECTED) */}
-        {(job.status === 2 || job.status === 3) && (
+        {/* Status: RESOLVED (APPROVED, REJECTED, or PARTIAL) */}
+        {(job.status === 2 || job.status === 3 || job.status === 6) && (
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 text-xs font-mono font-bold">
               {job.status === 2 ? (
                 <>
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span className="text-emerald-400">PASSED ({job.confidence}%)</span>
+                </>
+              ) : job.status === 6 ? (
+                <>
+                  <Scale className="w-4 h-4 text-teal-400 shrink-0" />
+                  <span className="text-teal-400">PARTIAL 50/50 ({job.confidence}%)</span>
                 </>
               ) : (
                 <>
@@ -385,23 +390,56 @@ export const JobCard: React.FC<JobCardProps> = ({
           </div>
         )}
 
-        {/* Status: IN_APPEAL */}
-        {job.status === 5 && (
+        {/* Status: RETRY (Awaiting Resubmission) */}
+        {job.status === 7 && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs font-mono">
+              <span className="text-orange-400 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
+                Retry Requested (Attempt {job.attempts || 1}/3)
+              </span>
+              <button
+                onClick={() => onInspectJury(job)}
+                className="text-[11px] text-slate-400 hover:text-cyan-300 underline"
+              >
+                View Feedback
+              </button>
+            </div>
+            {isWorker ? (
+              <button
+                onClick={() => onSubmitPR(job)}
+                disabled={isAnyTxPending}
+                className="w-full py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-slate-950 shadow-orange-500/20 active:translate-y-0.5 cursor-pointer"
+              >
+                <GitPullRequest className="w-3.5 h-3.5" />
+                <span>🔄 Resubmit Deliverable PR (Attempt {(job.attempts || 1) + 1}/3)</span>
+              </button>
+            ) : (
+              <div className="p-2 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] font-mono text-slate-400 text-center">
+                Sub-Agent is revising code deliverables per jury feedback...
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Status: IN_APPEAL or ESCALATED (Dispute Court) */}
+        {(job.status === 5 || job.status === 8) && (
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-purple-400">
-              <AlertOctagon className="w-4 h-4 animate-pulse text-purple-400 shrink-0" />
-              <span>APPEAL ACTIVE</span>
+            <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-yellow-400">
+              <AlertOctagon className="w-4 h-4 animate-pulse text-yellow-400 shrink-0" />
+              <span>{job.status === 5 ? 'APPEAL ACTIVE' : 'COURT ESCALATED'}</span>
             </div>
             <button
               onClick={() => onInspectJury(job)}
               disabled={isAnyTxPending}
               className={`py-1.5 px-3 rounded-xl text-xs font-mono font-semibold flex items-center gap-1 transition-colors border shadow-sm ${
                 isAnyTxPending
-                  ? 'bg-purple-950/20 border-purple-900/40 text-purple-500/50 opacity-50 cursor-not-allowed'
-                  : 'bg-purple-950/60 hover:bg-purple-900/60 text-purple-300 border-purple-500/40 cursor-pointer'
+                  ? 'bg-yellow-950/20 border-yellow-900/40 text-yellow-500/50 opacity-50 cursor-not-allowed'
+                  : 'bg-yellow-950/60 hover:bg-yellow-900/60 text-yellow-300 border-yellow-500/40 cursor-pointer'
               }`}
             >
-              <span>Appellate Docket</span>
+              <Scale className="w-3 h-3" />
+              <span>{isCreator || isWorker ? 'Mediation & Settle' : 'Inspect Docket'}</span>
               <ExternalLink className="w-3 h-3" />
             </button>
           </div>

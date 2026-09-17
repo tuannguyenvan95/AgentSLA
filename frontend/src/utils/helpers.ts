@@ -8,8 +8,8 @@ export interface Job {
   repo_url: string;
   sla_spec: string;
   pr_url: string;
-  status: number; // 0: OPEN, 1: IN_REVIEW, 2: RESOLVED_SUCCESS, 3: RESOLVED_REJECTED, 4: CANCELLED, 5: IN_APPEAL
-  verdict: string; // "PENDING", "APPROVED", "REJECTED", "CANCELLED", "IN_APPEAL"
+  status: number; // 0: OPEN, 1: IN_REVIEW, 2: RESOLVED_SUCCESS, 3: RESOLVED_REJECTED, 4: CANCELLED, 5: IN_APPEAL, 6: RESOLVED_PARTIAL, 7: RETRY, 8: ESCALATED
+  verdict: string; // "PENDING", "APPROVED", "REJECTED", "PARTIAL", "RETRY", "ESCALATE", "CANCELLED", "IN_APPEAL"
   reason: string;
   confidence: number;
   spec_score: number;
@@ -17,6 +17,8 @@ export interface Job {
   test_score: number;
   appeal_count: number;
   created_at_block: string;
+  attempts?: number;
+  split_approved_by?: string;
 }
 
 export function formatAddress(address: string): string {
@@ -108,6 +110,33 @@ export function getStatusInfo(status: number) {
         border: 'border-purple-500/40',
         badge: 'border-purple-500/50 text-purple-300 bg-purple-900/40',
         dot: 'bg-purple-400 animate-bounce',
+      };
+    case 6:
+      return {
+        label: 'RESOLVED (PARTIAL 50/50)',
+        color: 'text-teal-400',
+        bg: 'bg-teal-950/60',
+        border: 'border-teal-500/40',
+        badge: 'border-teal-500/50 text-teal-300 bg-teal-900/40',
+        dot: 'bg-teal-400',
+      };
+    case 7:
+      return {
+        label: 'RETRY (AWAITING RESUBMISSION)',
+        color: 'text-orange-400',
+        bg: 'bg-orange-950/60',
+        border: 'border-orange-500/40',
+        badge: 'border-orange-500/50 text-orange-300 bg-orange-900/40',
+        dot: 'bg-orange-400 animate-pulse',
+      };
+    case 8:
+      return {
+        label: 'ESCALATED (DISPUTE COURT)',
+        color: 'text-yellow-400',
+        bg: 'bg-yellow-950/60',
+        border: 'border-yellow-500/40',
+        badge: 'border-yellow-500/50 text-yellow-300 bg-yellow-900/40',
+        dot: 'bg-yellow-400 animate-ping',
       };
     default:
       return {

@@ -25,8 +25,10 @@ interface JuryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAppeal?: (jobId: string, bondGen: string) => Promise<void>;
+  onResolveDispute?: (jobId: string, action: 'MUTUAL_SPLIT' | 'CONCEDE') => Promise<void>;
   currentAccount?: string | null;
   isAppealing?: boolean;
+  isResolvingDispute?: boolean;
 }
 
 export const JuryModal: React.FC<JuryModalProps> = ({ 
@@ -34,24 +36,34 @@ export const JuryModal: React.FC<JuryModalProps> = ({
   isOpen, 
   onClose,
   onAppeal,
+  onResolveDispute,
   currentAccount,
   isAppealing = false,
+  isResolvingDispute = false,
 }) => {
   const [appealBond, setAppealBond] = useState('0.5');
   const [showAppealForm, setShowAppealForm] = useState(false);
 
   if (!isOpen || !job) return null;
 
-  const isApproved = job.verdict === 'APPROVED';
-  const isRejected = job.verdict === 'REJECTED';
+  const isApproved = job.verdict === 'APPROVED' || job.status === 2;
+  const isRejected = job.verdict === 'REJECTED' || job.status === 3;
+  const isPartial = job.verdict === 'PARTIAL' || job.status === 6;
+  const isRetry = job.verdict === 'RETRY' || job.status === 7;
+  const isEscalated = job.verdict === 'ESCALATE' || job.status === 8;
   const isInAppeal = job.status === 5;
   const categoryInfo = getCategoryInfo(job.category);
-  const averageScore = Math.round((job.spec_score + job.quality_score + job.test_score) / 3) || (isApproved ? 85 : 30);
+  const averageScore = Math.round((job.spec_score + job.quality_score + job.test_score) / 3) || (isApproved ? 85 : isPartial ? 65 : 30);
   const gradeInfo = getScoreGrade(averageScore);
 
-  const isParty = currentAccount && (
-    currentAccount.toLowerCase() === job.creator.toLowerCase() ||
-    currentAccount.toLowerCase() === job.worker.toLowerCase()
+  const isCreator = Boolean(currentAccount && currentAccount.toLowerCase() === job.creator.toLowerCase());
+  const isWorker = Boolean(currentAccount && job.worker && currentAccount.toLowerCase() === job.worker.toLowerCase());
+  const isParty = isCreator || isWorker;
+
+  const hasApprovedSplit = Boolean(
+    currentAccount &&
+    job.split_approved_by &&
+    job.split_approved_by.toLowerCase() === currentAccount.toLowerCase()
   );
 
   const handleTriggerAppeal = async (e: React.FormEvent) => {
@@ -99,6 +111,12 @@ export const JuryModal: React.FC<JuryModalProps> = ({
                 ? 'bg-purple-950/40 border-purple-500/40 text-purple-300'
                 : isApproved
                 ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300'
+                : isPartial
+                ? 'bg-teal-950/40 border-teal-500/40 text-teal-300'
+                : isRetry
+                ? 'bg-amber-950/40 border-amber-500/40 text-amber-300'
+                : isEscalated
+                ? 'bg-yellow-950/40 border-yellow-500/40 text-yellow-300'
                 : isRejected
                 ? 'bg-rose-950/40 border-rose-500/40 text-rose-300'
                 : 'bg-slate-900 border-slate-700 text-slate-300'
@@ -109,6 +127,12 @@ export const JuryModal: React.FC<JuryModalProps> = ({
                 <AlertOctagon className="w-9 h-9 text-purple-400 shrink-0 animate-pulse" />
               ) : isApproved ? (
                 <CheckCircle2 className="w-9 h-9 text-emerald-400 shrink-0" />
+              ) : isPartial ? (
+                <CheckCircle2 className="w-9 h-9 text-teal-400 shrink-0" />
+              ) : isRetry ? (
+                <AlertOctagon className="w-9 h-9 text-amber-400 shrink-0" />
+              ) : isEscalated ? (
+                <AlertOctagon className="w-9 h-9 text-yellow-400 shrink-0" />
               ) : isRejected ? (
                 <XCircle className="w-9 h-9 text-rose-400 shrink-0" />
               ) : (
@@ -248,8 +272,62 @@ export const JuryModal: React.FC<JuryModalProps> = ({
             </div>
           )}
 
+          {/* Security & Canary Protection Badge */}
+          <div className="flex items-center justify-between gap-2 p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] font-mono">
+            <div className="flex items-center gap-2 text-emerald-400">
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              <span>Canary Token Defense Active (Anti-Prompt Injection)</span>
+            </div>
+            <span className="text-slate-500">Attempt {job.attempts || 1}/3</span>
+          </div>
+
+          {/* 2-of-2 Mutual Dispute Settlement Section (DeliverableCourt Standard) */}
+          {onResolveDispute && isParty && (job.status === 5 || job.status === 8) && (
+            <div className="p-4 rounded-xl bg-yellow-950/30 border border-yellow-500/30 space-y-3">
+              <div>
+                <span className="text-xs font-bold text-yellow-300 flex items-center gap-1.5">
+                  <Scale className="w-4 h-4 text-yellow-400" />
+                  2-of-2 Mutual Dispute Settlement Court
+                </span>
+                <p className="text-[11px] text-yellow-400/80 mt-0.5 leading-relaxed">
+                  Avoid prolonged litigation. Both parties can agree to a fair 50/50 split (requires 2-of-2 mutual approval), or unilaterally concede to release funds.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                {/* 50/50 Split Button */}
+                <button
+                  onClick={() => onResolveDispute(job.job_id, 'MUTUAL_SPLIT')}
+                  disabled={isResolvingDispute || hasApprovedSplit}
+                  className={`py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all border ${
+                    hasApprovedSplit
+                      ? 'bg-yellow-950/60 border-yellow-500/40 text-yellow-300 cursor-not-allowed'
+                      : isResolvingDispute
+                      ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed'
+                      : 'bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 border-yellow-500/40 active:translate-y-0.5 cursor-pointer'
+                  }`}
+                >
+                  {hasApprovedSplit ? (
+                    <span>✓ 1 of 2 Approved (Waiting for Counterparty)</span>
+                  ) : (
+                    <span>🤝 Sign 50/50 Split Agreement</span>
+                  )}
+                </button>
+
+                {/* Concede Button */}
+                <button
+                  onClick={() => onResolveDispute(job.job_id, 'CONCEDE')}
+                  disabled={isResolvingDispute}
+                  className="py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all bg-slate-800/80 hover:bg-rose-950/50 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-500/40 active:translate-y-0.5 cursor-pointer"
+                >
+                  <span>🏳️ {isCreator ? 'Concede to Sub-Agent' : 'Concede to Master Agent'}</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* On-chain Dispute Appeal Section */}
-          {onAppeal && isParty && (job.status === 2 || job.status === 3) && (
+          {onAppeal && isParty && (job.status === 2 || job.status === 3 || job.status === 6) && (
             <div className="p-4 rounded-xl bg-purple-950/30 border border-purple-500/30 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
@@ -258,15 +336,16 @@ export const JuryModal: React.FC<JuryModalProps> = ({
                     Dispute Adjudication Verdict?
                   </span>
                   <p className="text-[11px] text-purple-400/80 mt-0.5">
-                    Stake an appeal bond to trigger appellate review by higher consensus threshold.
+                    Stake an appeal bond to trigger appellate review by higher consensus threshold (Round {job.appeal_count || 0}/2).
                   </p>
                 </div>
                 {!showAppealForm && (
                   <button
                     onClick={() => setShowAppealForm(true)}
-                    className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition-colors"
+                    disabled={(job.appeal_count || 0) >= 2}
+                    className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold text-xs transition-colors"
                   >
-                    File Appeal
+                    {(job.appeal_count || 0) >= 2 ? 'Final (2/2 Appeals)' : 'File Appeal'}
                   </button>
                 )}
               </div>

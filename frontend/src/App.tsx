@@ -721,6 +721,55 @@ export const App: React.FC = () => {
     }
   };
 
+  // 6. Resolve Dispute (Mutual Split or Concede - DeliverableCourt standard)
+  const handleResolveDispute = async (jobId: string, action: 'MUTUAL_SPLIT' | 'CONCEDE') => {
+    if (!client || !account) {
+      throw new Error('Please connect your MetaMask wallet.');
+    }
+    if (!contractAddress || !contractAddress.startsWith('0x') || contractAddress === '0x0000000000000000000000000000000000000000') {
+      throw new Error('No valid Intelligent Contract configured.');
+    }
+
+    setIsTxPending(true);
+    setPendingTx({ jobId, action: 'appeal', statusText: 'Awaiting MetaMask signature for settlement...' });
+    setErrorMsg(null);
+    try {
+      const hash = await sendGenLayerTransaction({
+        contractAddress,
+        functionName: 'resolve_dispute',
+        args: [jobId, action],
+        value: 0n,
+        account,
+      });
+      setLatestTxHash(hash);
+      setPendingTx({ jobId, action: 'appeal', statusText: 'Broadcasting dispute settlement...' });
+      setSuccessMsg(`Dispute settlement (${action}) broadcasted to contract...`);
+
+      const receipt = await client.waitForTransactionReceipt({
+        hash: hash as any,
+        status: TransactionStatus.FINALIZED,
+        interval: 2000,
+        retries: 120,
+      });
+
+      if (!isTxSuccessful(receipt)) {
+        throw new Error(`Dispute settlement failed: expected FINISHED_WITH_RETURN, got ${receipt?.txExecutionResultName || 'EXECUTION_FAILURE'}`);
+      }
+
+      setSuccessMsg(`Dispute settlement (${action}) recorded successfully!`);
+      await fetchOnChainData();
+      await fetchBalance(account);
+    } catch (err: any) {
+      if (err?.code === 4001 || err?.message?.includes('User rejected')) {
+        throw new Error('Dispute settlement transaction was cancelled in your wallet extension.');
+      }
+      throw err;
+    } finally {
+      setIsTxPending(false);
+      setPendingTx(null);
+    }
+  };
+
   // Role-based filtering and computation for authenticated user
   const myCreatedJobs = useMemo(() => {
     if (!account) return [];
@@ -1426,8 +1475,10 @@ export const App: React.FC = () => {
         isOpen={!!selectedJobForJury}
         onClose={() => setSelectedJobForJury(null)}
         onAppeal={handleAppealJob}
+        onResolveDispute={handleResolveDispute}
         currentAccount={account}
         isAppealing={isTxPending}
+        isResolvingDispute={isTxPending}
       />
 
       {/* Interactive Wallet Guidance Prompt */}
