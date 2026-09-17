@@ -112,27 +112,22 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="h-16 flex items-center justify-between gap-4">
+      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="h-16 flex items-center justify-between gap-3 sm:gap-4">
           {/* Logo & Brand */}
-          <div className="flex items-center gap-3 shrink-0 cursor-pointer" onClick={() => onSelectTab('MARKETPLACE')}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-400 to-emerald-400 p-0.5 shadow-[0_0_20px_rgba(6,182,212,0.35)] hover:shadow-[0_0_25px_rgba(6,182,212,0.6)] transition-all group">
-              <div className="w-full h-full bg-[#060911] rounded-[10px] flex items-center justify-center group-hover:bg-slate-950 transition-colors">
-                <Cpu className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
+          <div className="flex items-center gap-2.5 shrink-0 cursor-pointer" onClick={() => onSelectTab('MARKETPLACE')}>
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-400 to-emerald-400 p-0.5 shadow-[0_0_15px_rgba(6,182,212,0.35)] hover:shadow-[0_0_20px_rgba(6,182,212,0.6)] transition-all group">
+              <div className="w-full h-full bg-[#060911] rounded-[9px] flex items-center justify-center group-hover:bg-slate-950 transition-colors">
+                <Cpu className="w-4.5 h-4.5 text-cyan-400 group-hover:scale-110 transition-transform" />
               </div>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-black text-lg tracking-tight bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-                  AgentSLA
-                </span>
-                <span className="px-2 py-0.5 text-[10px] font-mono uppercase bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 rounded-full font-bold shadow-[0_0_10px_rgba(6,182,212,0.2)]">
-                  Protocol
-                </span>
-              </div>
-              <p className="text-[10px] text-slate-400 -mt-0.5 font-medium hidden sm:block tracking-wide">
-                Autonomous Sub-Agent SLA Court & Escrow
-              </p>
+            <div className="flex items-center gap-2">
+              <span className="font-black text-base sm:text-lg tracking-tight bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                AgentSLA
+              </span>
+              <span className="px-1.5 py-0.5 text-[9px] font-mono uppercase bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 rounded-full font-bold shadow-[0_0_8px_rgba(6,182,212,0.2)]">
+                Protocol
+              </span>
             </div>
           </div>
 
@@ -211,14 +206,14 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Right: Actions & Comprehensive Wallet Profile */}
           <div className="flex items-center gap-2">
-            {/* Intelligent Contract Explorer Badge */}
+            {/* Intelligent Contract Explorer Badge (Visible on large screens) */}
             {contractAddress && (
               <a
                 href={getExplorerUrl(contractAddress)}
                 target="_blank"
                 rel="noreferrer"
                 title={`Intelligent Contract on Studionet: ${contractAddress}`}
-                className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-mono transition-all border bg-slate-900/90 border-slate-800 text-cyan-300 hover:border-cyan-500/40 hover:bg-slate-800/80 shadow-sm whitespace-nowrap"
+                className="hidden 2xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-mono transition-all border bg-slate-900/90 border-slate-800 text-cyan-300 hover:border-cyan-500/40 hover:bg-slate-800/80 shadow-sm whitespace-nowrap"
               >
                 <FileCode2 className="w-3.5 h-3.5 shrink-0 text-cyan-400" />
                 <span>{formatAddress(contractAddress)}</span>
@@ -239,9 +234,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             {account && (
               <div>
                 {isCorrectNetwork ? (
-                  <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 text-xs font-mono shadow-sm whitespace-nowrap">
+                  <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 text-xs font-mono shadow-sm whitespace-nowrap">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span>studio-next (61997)</span>
+                    <span>Studio Next (61997)</span>
                   </div>
                 ) : (
                   <button

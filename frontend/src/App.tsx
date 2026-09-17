@@ -869,7 +869,7 @@ export const App: React.FC = () => {
           <DocsView />
         ) : (
           /* MARKETPLACE or MY_CONTRACTS */
-          <div>
+          <div className="w-full">
             {/* CONDITIONAL BANNER: ROLE DASHBOARD (MY_CONTRACTS) vs PLATFORM HERO (MARKETPLACE) */}
             {activeNavTab === 'MY_CONTRACTS' ? (
               /* DEDICATED ROLE-BASED GOVERNANCE & PORTFOLIO BANNER */
