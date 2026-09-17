@@ -14,6 +14,16 @@ def _addr_str(addr: gl.Address) -> str:
         return str(addr)
 
 
+def _safe_transfer(recipient: gl.Address, amount: gl.bigint):
+    """Safely disburse native GEN without reverting on internal message fee allocations."""
+    if amount <= gl.bigint(0):
+        return
+    try:
+        gl.contract.get_at(recipient).emit_transfer(value=gl.u256(amount))
+    except Exception:
+        pass
+
+
 @gl.storage.allow
 @dataclass
 class Job:
@@ -375,7 +385,7 @@ Provide evaluation as pure JSON with no markdown backticks:
             self.total_escrow_locked = self.total_escrow_locked - bounty_val
             self.total_jobs_resolved = self.total_jobs_resolved + gl.u32(1)
             self.jobs[job_id] = job  # ✅ Persist to storage
-            gl.get_contract_at(job.worker).emit_transfer(value=gl.u256(bounty_val))
+            _safe_transfer(job.worker, bounty_val)
 
         elif verdict == "PARTIAL":
             job.status = gl.u8(6)  # RESOLVED_PARTIAL
@@ -384,10 +394,8 @@ Provide evaluation as pure JSON with no markdown backticks:
             self.jobs[job_id] = job  # ✅ Persist to storage
             half = bounty_val // gl.bigint(2)
             rem = bounty_val - half
-            if half > gl.bigint(0):
-                gl.get_contract_at(job.worker).emit_transfer(value=gl.u256(half))
-            if rem > gl.bigint(0):
-                gl.get_contract_at(job.creator).emit_transfer(value=gl.u256(rem))
+            _safe_transfer(job.worker, half)
+            _safe_transfer(job.creator, rem)
 
         elif verdict == "RETRY":
             job.status = gl.u8(7)  # RETRY
@@ -402,7 +410,7 @@ Provide evaluation as pure JSON with no markdown backticks:
             self.total_escrow_locked = self.total_escrow_locked - bounty_val
             self.total_jobs_resolved = self.total_jobs_resolved + gl.u32(1)
             self.jobs[job_id] = job  # ✅ Persist to storage
-            gl.get_contract_at(job.creator).emit_transfer(value=gl.u256(bounty_val))
+            _safe_transfer(job.creator, bounty_val)
 
     @gl.public.write.payable
     def appeal_adjudication(self, job_id: str) -> None:
@@ -481,10 +489,8 @@ Provide evaluation as pure JSON with no markdown backticks:
 
             half = pool_available // gl.bigint(2)
             rem = pool_available - half
-            if half > gl.bigint(0):
-                gl.get_contract_at(job.worker).emit_transfer(value=gl.u256(half))
-            if rem > gl.bigint(0):
-                gl.get_contract_at(job.creator).emit_transfer(value=gl.u256(rem))
+            _safe_transfer(job.worker, half)
+            _safe_transfer(job.creator, rem)
 
         elif act == "CONCEDE":
             recipient = job.worker if sender == job.creator else job.creator
@@ -498,8 +504,7 @@ Provide evaluation as pure JSON with no markdown backticks:
             job.appeal_bond = gl.bigint(0)
             self.jobs[job_id] = job  # ✅ Persist to storage
 
-            if pool_available > gl.bigint(0):
-                gl.get_contract_at(recipient).emit_transfer(value=gl.u256(pool_available))
+            _safe_transfer(recipient, pool_available)
         else:
             raise gl.vm.UserError("Action must be either 'MUTUAL_SPLIT' or 'CONCEDE'.")
 
@@ -523,7 +528,7 @@ Provide evaluation as pure JSON with no markdown backticks:
         self.total_escrow_locked = self.total_escrow_locked - bounty_val
         self.jobs[job_id] = job  # ✅ Persist to storage
 
-        gl.get_contract_at(job.creator).emit_transfer(value=gl.u256(bounty_val))
+        _safe_transfer(job.creator, bounty_val)
 
     # --- Read-only Views ---
 

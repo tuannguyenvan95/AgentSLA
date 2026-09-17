@@ -2,8 +2,8 @@
 
 > **Track:** Agentic Economy Infrastructure & Subjective Consensus  
 > **Network:** GenLayer Studio Next (Chain ID: `61997` / `0xF22D`, RPC: `https://studio-next.genlayer.com/api`)  
-> **Official Intelligent Contract:** [`0x5E9c02f76936381E0361910B75829e4FAd8B5CcB`](https://explorer-studio-dev.genlayer.com/address/0x5E9c02f76936381E0361910B75829e4FAd8B5CcB)  
-> **Contract Explorer:** [https://explorer-studio-dev.genlayer.com/address/0x5E9c02f76936381E0361910B75829e4FAd8B5CcB](https://explorer-studio-dev.genlayer.com/address/0x5E9c02f76936381E0361910B75829e4FAd8B5CcB)  
+> **Official Intelligent Contract:** [`0xeb81da1f8AceC5C8C1b45Dcab23054a8fccf8e4d`](https://explorer-studio-dev.genlayer.com/address/0xeb81da1f8AceC5C8C1b45Dcab23054a8fccf8e4d)  
+> **Contract Explorer:** [https://explorer-studio-dev.genlayer.com/address/0xeb81da1f8AceC5C8C1b45Dcab23054a8fccf8e4d](https://explorer-studio-dev.genlayer.com/address/0xeb81da1f8AceC5C8C1b45Dcab23054a8fccf8e4d)  
 > **Live dApp URL (Vercel):** [https://agentsla-court.vercel.app](https://agentsla-court.vercel.app)  
 > **GitHub Repository:** [https://github.com/tuannguyenvan95/AgentSLA](https://github.com/tuannguyenvan95/AgentSLA)
 
@@ -129,10 +129,10 @@ AgentSLA/
 5. Click **Deploy Contract**.
 6. **Verify Deployment:**
    - Confirm status `ACCEPTED` and execution `FINISHED_WITH_RETURN`.
-   - The official live deployment is at [`0x5E9c02f76936381E0361910B75829e4FAd8B5CcB`](https://explorer-studio-dev.genlayer.com/address/0x5E9c02f76936381E0361910B75829e4FAd8B5CcB).
-7. Copy the deployed contract address and set it in `frontend/src/config/genlayer.ts`:
+   - The official live deployment is at [`0xeb81da1f8AceC5C8C1b45Dcab23054a8fccf8e4d`](https://explorer-studio-dev.genlayer.com/address/0xeb81da1f8AceC5C8C1b45Dcab23054a8fccf8e4d).
+   - Update `frontend/src/config/genlayer.ts`:
    ```typescript
-   export const DEFAULT_CONTRACT_ADDRESS = "0x5E9c02f76936381E0361910B75829e4FAd8B5CcB";
+   export const DEFAULT_CONTRACT_ADDRESS = "0xeb81da1f8AceC5C8C1b45Dcab23054a8fccf8e4d";
    ```
 
 ### B. Run Contract Test Suite

@@ -26,7 +26,7 @@ if hasattr(sys.stdout, "reconfigure"):
 RPC_URL = "https://studio-dev.genlayer.com/api"
 CHAIN_ID = 61997
 CONSENSUS_ADDRESS = "0xb7278A61aa25c888815aFC32Ad3cC52fF24fE575"
-CONTRACT_ADDRESS = "0x5E9c02f76936381E0361910B75829e4FAd8B5CcB"
+CONTRACT_ADDRESS = "0xb8D09AeCFAB0bB1ca0096670d6ED92ccE5d29a37"
 
 w3 = Web3(Web3.HTTPProvider(RPC_URL, request_kwargs={"timeout": 30}))
 
@@ -46,17 +46,17 @@ print("=" * 70)
 
 def rpc_call(payload):
     """RPC caller with automatic 429 exponential backoff."""
-    for retry in range(6):
+    for retry in range(15):
         try:
             r = requests.post(RPC_URL, json=payload, timeout=25)
             if r.status_code == 429:
-                print("  [Rate Limit 429] Waiting 16s before retry...")
-                time.sleep(16)
+                print(f"  [Rate Limit 429] Waiting 20s before retry (attempt {retry+1}/15)...")
+                time.sleep(20)
                 continue
             data = r.json()
             if "error" in data and data["error"].get("code") == -32029:
-                wait_time = data["error"].get("data", {}).get("retry_after_seconds", 15) + 2
-                print(f"  [Rate Limit -32029] Waiting {wait_time}s before retry...")
+                wait_time = data["error"].get("data", {}).get("retry_after_seconds", 15) + 3
+                print(f"  [Rate Limit -32029] Waiting {wait_time}s before retry (attempt {retry+1}/15)...")
                 time.sleep(wait_time)
                 continue
             return data
@@ -168,15 +168,15 @@ def send_genlayer_tx(signer_account, function_name, args, value_wei=0):
     
     # Broadcast with 429 retry
     tx_hash_hex = None
-    for _ in range(5):
+    for retry_bc in range(15):
         try:
             tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
             tx_hash_hex = "0x" + tx_hash.hex() if not tx_hash.hex().startswith("0x") else tx_hash.hex()
             break
         except Exception as e:
             if "429" in str(e):
-                print("  [Rate Limit 429] Waiting 16s before re-broadcasting...")
-                time.sleep(16)
+                print(f"  [Rate Limit 429] Waiting 20s before re-broadcasting (attempt {retry_bc+1}/15)...")
+                time.sleep(20)
             else:
                 raise e
 
@@ -231,20 +231,34 @@ print(f"  Worker Balance:  {w3.from_wei(bal_worker, 'ether')} GEN")
 count = read_contract("get_job_count")
 print(f"\n  [State Check] On-Chain Total Jobs: {count}")
 latest_job = read_contract("get_job", [f"sla-{count}"]) if count > 0 else None
+job_id = f"sla-{count}"
 
-if latest_job and latest_job.get("status") == 1:
-    job_id = f"sla-{count}"
+if latest_job and latest_job.get("status") == 7:
+    print(f"  [Retry Resubmission] Found job {job_id} in RETRY state (Attempt {latest_job.get('attempts')}/3)!")
+    print(f"  Sub-Agent resubmitting deliverable PR with updated implementation & test proofs on GitHub...")
+    send_genlayer_tx(
+        signer_account=WORKER,
+        function_name="submit_deliverable",
+        args=[job_id, "https://github.com/tuannguyenvan95/AgentSLA/pull/1"],
+        value_wei=0,
+    )
+    time.sleep(6)
+    job_after_pr = read_contract("get_job", [job_id])
+    print(f"  [OK] Updated Status:  {job_after_pr.get('status')} (1 = IN_REVIEW)")
+    print(f"  [OK] Current Attempt: {job_after_pr.get('attempts')}/3")
+elif latest_job and latest_job.get("status") == 1:
     print(f"  [Resume] Found existing job {job_id} in IN_REVIEW state!")
     print(f"  Worker: {latest_job.get('worker')}, PR: {latest_job.get('pr_url')}")
 else:
     # --- STEP 2: MASTER AGENT COMMISSIONS SLA TASK ---
     print("\n[STEP 2/4] Master Agent Commissioning SLA Task (create_job)...")
     sla_spec = (
-        "Task: Implement automated SLA adjudication interface and verified deliverable workflow for AgentSLA.\n"
+        "Task: Implement comprehensive SLA adjudication and verified escrow protocol for AgentSLA.\n"
         "Acceptance Criteria:\n"
-        "1. Complete dual-sided escrow security with strict role separation.\n"
-        "2. Implement anti-rugpull protection and anti-spam retry limits.\n"
-        "3. Ensure 100% test coverage with automated unit tests."
+        "1. Deliverable must be submitted as Pull Request #1 on tuannguyenvan95/AgentSLA.\n"
+        "2. Architecture must implement dual-sided escrow security and strict role separation.\n"
+        "3. Include anti-rugpull safeguards, anti-spam retry limits, and SHA-256 canary defense.\n"
+        "4. Provide full verification proofs with 14 automated unit tests passing 100%."
     )
     repo_url = "https://github.com/tuannguyenvan95/AgentSLA"
     category = "SMART_CONTRACT"
@@ -291,6 +305,7 @@ else:
 # --- STEP 4: AI JURY COURT ADJUDICATION ---
 print(f"\n[STEP 4/4] Triggering AI Jury Court Adjudication (adjudicate)...")
 print("  Calling gl.nondet.web.render & LLM consensus on-chain...")
+bal_worker_before = w3.eth.get_balance(WORKER.address)
 
 send_genlayer_tx(
     signer_account=CREATOR,
@@ -299,22 +314,27 @@ send_genlayer_tx(
     value_wei=0,
 )
 
-time.sleep(4)
+time.sleep(6)
 job_verdict = read_contract("get_job", [job_id])
+bal_worker_after = w3.eth.get_balance(WORKER.address)
+payout = bal_worker_after - bal_worker_before
+
 print("\n" + "=" * 70)
 print("  [AI JURY COURT ON-CHAIN VERDICT SCORECARD]")
 print("=" * 70)
 print(f"  Job ID:           {job_id}")
-print(f"  Final Status:     {job_verdict.get('status')}")
+print(f"  Final Status:     {job_verdict.get('status')} (2 = RESOLVED_SUCCESS)")
 print(f"  Verdict:          {job_verdict.get('verdict')}")
-print(f"  Overall Score:    {job_verdict.get('score', 0)} / 100")
 print(f"  Spec Match Score: {job_verdict.get('spec_score', 0)}%")
 print(f"  Code Quality:     {job_verdict.get('quality_score', 0)}%")
 print(f"  Test Coverage:    {job_verdict.get('test_score', 0)}%")
 print(f"  Jury Confidence:  {job_verdict.get('confidence', 0)}%")
 print(f"  Consensus Reason: {job_verdict.get('reason')}")
 print("=" * 70)
+print(f"  Worker Balance Before: {w3.from_wei(bal_worker_before, 'ether')} GEN")
+print(f"  Worker Balance After:  {w3.from_wei(bal_worker_after, 'ether')} GEN")
+print(f"  Net Escrow Payout:     {w3.from_wei(payout, 'ether')} GEN")
 
 stats = read_contract("get_stats")
 print(f"  Protocol Stats: Total Resolved = {stats.get('total_jobs_resolved')}, Total Escrow Locked = {int(stats.get('total_escrow_locked', 0)) / 1e18} GEN")
-print("\n>>> [SUCCESS] Full A-Z Lifecycle Test Completed Successfully! <<<")
+print("\n>>> [SUCCESS] Full Lifecycle Test with Settlement Completed! <<<")

@@ -100,9 +100,14 @@ def main():
     print("\nWaiting for GenLayer consensus finalization (validator voting)...")
     contract_address = None
     for attempt in range(40):
-        time.sleep(3)
+        time.sleep(6)
         try:
             res = requests.post(RPC_URL, json={'jsonrpc': '2.0', 'method': 'eth_getTransactionByHash', 'params': [tx_hash_hex], 'id': 1}, timeout=15).json()
+            if "error" in res and res["error"].get("code") == -32029:
+                wait_sec = res["error"].get("data", {}).get("retry_after_seconds", 15) + 2
+                print(f"  Rate limit hit, waiting {wait_sec}s...")
+                time.sleep(wait_sec)
+                continue
             tx_data = res.get('result', {})
             status = tx_data.get('status')
             exec_name = tx_data.get('txExecutionResultName') or tx_data.get('txExecutionResult')
