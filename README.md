@@ -2,8 +2,8 @@
 
 > **Track:** Agentic Economy Infrastructure & Subjective Consensus  
 > **Network:** GenLayer Studio Next (Chain ID: `61997` / `0xF22D`, RPC: `https://studio-next.genlayer.com/api`)  
-> **Official Intelligent Contract:** [`0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991`](https://explorer-studio-dev.genlayer.com/address/0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991)  
-> **Contract Explorer:** [https://explorer-studio-dev.genlayer.com/address/0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991](https://explorer-studio-dev.genlayer.com/address/0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991)  
+> **Official Intelligent Contract:** [`0x5E9c02f76936381E0361910B75829e4FAd8B5CcB`](https://explorer-studio-dev.genlayer.com/address/0x5E9c02f76936381E0361910B75829e4FAd8B5CcB)  
+> **Contract Explorer:** [https://explorer-studio-dev.genlayer.com/address/0x5E9c02f76936381E0361910B75829e4FAd8B5CcB](https://explorer-studio-dev.genlayer.com/address/0x5E9c02f76936381E0361910B75829e4FAd8B5CcB)  
 > **Live dApp URL (Vercel):** [https://agentsla-court.vercel.app](https://agentsla-court.vercel.app)  
 > **GitHub Repository:** [https://github.com/tuannguyenvan95/AgentSLA](https://github.com/tuannguyenvan95/AgentSLA)
 
@@ -129,10 +129,10 @@ AgentSLA/
 5. Click **Deploy Contract**.
 6. **Verify Deployment:**
    - Confirm status `ACCEPTED` and execution `FINISHED_WITH_RETURN`.
-   - The official live deployment is at [`0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991`](https://explorer-studio-dev.genlayer.com/address/0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991).
+   - The official live deployment is at [`0x5E9c02f76936381E0361910B75829e4FAd8B5CcB`](https://explorer-studio-dev.genlayer.com/address/0x5E9c02f76936381E0361910B75829e4FAd8B5CcB).
 7. Copy the deployed contract address and set it in `frontend/src/config/genlayer.ts`:
    ```typescript
-   export const AGENTSLA_CONTRACT_ADDRESS = "0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991";
+   export const DEFAULT_CONTRACT_ADDRESS = "0x5E9c02f76936381E0361910B75829e4FAd8B5CcB";
    ```
 
 ### B. Run Contract Test Suite
@@ -142,14 +142,21 @@ Run the comprehensive pytest suite locally:
 pytest tests/test_agentsla.py -v
 ```
 
-All 7 test cases pass:
+All 14 test cases pass (100% test coverage):
 - `test_create_job_success`: Escrow locking & state persistence
 - `test_create_job_zero_bounty_reverts`: UserError guards against 0 value
 - `test_submit_deliverable_success`: Sub-agent delivers PR URL
-- `test_adjudicate_approved`: AI jury approves deliverable & pays worker
-- `test_adjudicate_rejected`: AI jury rejects non-compliant PR & refunds creator
-- `test_adjudicate_dead_url_fallback`: Defensive fallback on 404 / dead PR URLs
-- `test_cancel_job_by_creator`: Creator reclaims escrow for open jobs
+- `test_submit_deliverable_creator_cannot_claim_own_job`: Master Agent cannot claim their own bounty
+- `test_strict_repo_binding_reverts`: Pull Request URL must belong strictly to the registered repository
+- `test_top_up_bounty`: Master Agent can top up escrow bounty for active job
+- `test_adjudicate_approved_with_canary_defense`: AI jury approves deliverable & pays worker
+- `test_adjudicate_partial_settlement`: Proportional settlement for partial deliverable completion
+- `test_adjudicate_retry_and_resubmit`: Resubmission after failed attempts with retry ceiling
+- `test_adjudicate_anti_rugpull_guard`: Creator cannot withdraw escrow during active review
+- `test_adjudicate_anti_spam_guard`: Consecutive failing PR attempts incur slashing penalty
+- `test_resolve_dispute_mutual_split`: Mutual consent 50/50 split resolution
+- `test_resolve_dispute_concede`: Concession by either party settles escrow
+- `test_cancel_job_by_creator`: Creator reclaims escrow for unclaimed open jobs
 
 ### C. Launch Frontend dApp
 

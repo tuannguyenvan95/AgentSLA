@@ -17,9 +17,9 @@ CRITICAL DEPLOYMENT INSTRUCTIONS:
    - Click the transaction in the sidebar or check explorer.
    - Verify status ACCEPTED and execution FINISHED_WITH_RETURN.
 6. Copy the deployed contract address:
-   Deployed live: 0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991
+   Deployed live: 0x5E9c02f76936381E0361910B75829e4FAd8B5CcB
 7. Update `frontend/src/config/genlayer.ts`:
-   export const AGENTSLA_CONTRACT_ADDRESS = "0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991";
+   export const AGENTSLA_CONTRACT_ADDRESS = "0x5E9c02f76936381E0361910B75829e4FAd8B5CcB";
 """
 
 import sys
@@ -33,7 +33,7 @@ def display_guide():
     print("  • Chain ID: 61997 (0xF22D)")
     print("  • RPC: https://studio-next.genlayer.com/api")
     print("  • Explorer: https://explorer-studio-dev.genlayer.com")
-    print("  • Official Contract: 0x2094c96B0FFDB9bBB72f2fCb52773A5c634f1991")
+    print("  • Official Contract: 0x5E9c02f76936381E0361910B75829e4FAd8B5CcB")
     print("=" * 70)
 
 if __name__ == "__main__":
