@@ -2,7 +2,7 @@ import { createClient } from 'genlayer-js';
 import { studionet } from 'genlayer-js/chains';
 
 // Official Deployed Intelligent Contract on GenLayer Studio Next (Chain 61997)
-export const DEFAULT_CONTRACT_ADDRESS = '0xeb81da1f8AceC5C8C1b45Dcab23054a8fccf8e4d';
+export const DEFAULT_CONTRACT_ADDRESS = '0x417ECD74aEC923d0b6cc53783da481F7F48DaE5c';
 
 export const studioNext = {
   ...studionet,

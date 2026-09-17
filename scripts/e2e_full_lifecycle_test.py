@@ -26,7 +26,7 @@ if hasattr(sys.stdout, "reconfigure"):
 RPC_URL = "https://studio-dev.genlayer.com/api"
 CHAIN_ID = 61997
 CONSENSUS_ADDRESS = "0xb7278A61aa25c888815aFC32Ad3cC52fF24fE575"
-CONTRACT_ADDRESS = "0xb8D09AeCFAB0bB1ca0096670d6ED92ccE5d29a37"
+CONTRACT_ADDRESS = "0x417ECD74aEC923d0b6cc53783da481F7F48DaE5c"
 
 w3 = Web3(Web3.HTTPProvider(RPC_URL, request_kwargs={"timeout": 30}))
 
